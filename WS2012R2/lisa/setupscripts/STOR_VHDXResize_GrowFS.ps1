@@ -1,3 +1,4 @@
+
 ########################################################################
 #
 # Linux on Hyper-V and Azure Test Code, ver. 1.0.0
@@ -318,5 +319,26 @@ if (-not $($CheckResultsts[-1]))
 
 "Info : The guest sees the new size after resizing ($diskSize)"
 "Info : VHDx Resize - ${TC_COVERED} is Done"
+
+#
+# Collect the log file from the client
+#
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+"Info: Collect storvsc.zip from ${remoteFile} to ${localFile}"
+bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 return $True

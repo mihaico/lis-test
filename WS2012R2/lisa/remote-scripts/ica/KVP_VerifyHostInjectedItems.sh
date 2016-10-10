@@ -212,6 +212,16 @@ if [ $poolItemNumber -ne $actualPoolItemNumber ]; then
     exit 70
 fi
 
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 LogMsg "Updating test case state to completed"
 UpdateTestState $ICA_TESTCOMPLETED
 

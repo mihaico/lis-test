@@ -586,6 +586,16 @@ if [ ${#LEGACY_NET_INTERFACES[@]} -eq $__legacy_iterator ]; then
 	fi
 fi
 
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 UpdateSummary "Test successful"
 LogMsg "Updating test case state to completed"
 SetTestStateCompleted

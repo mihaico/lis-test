@@ -421,6 +421,15 @@ for __iterator in ${!SYNTH_NET_INTERFACES[@]}; do
 	UpdateSummary "Successfully disabled promiscuous mode on ${SYNTH_NET_INTERFACES[$__iterator]}"
 done
 
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
 
 # everything ok
 UpdateSummary "Test successful"

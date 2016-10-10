@@ -243,6 +243,8 @@ foreach ($p in $params)
     "VM2NAME" { $vm2Name = $fields[1].Trim() }
     "SshKey"  { $sshKey  = $fields[1].Trim() }
     "ipv4"    { $ipv4    = $fields[1].Trim() }
+    "TestLogDir" { $TestLogDir = $fields[1].Trim() }
+    "TestName"   { $TestName = $fields[1].Trim() }
     "STATIC_IP1" { $vm1StaticIP = $fields[1].Trim() }
     "STATIC_IP2" { $vm2StaticIP = $fields[1].Trim() }
     "NETMASK" { $netmask = $fields[1].Trim() }
@@ -626,6 +628,26 @@ if (-not $retVal)
 $retVal = SendCommandToVM $vm2ipv4 $sshKey "cd /root && chmod u+x ${filename} && sed -i 's/\r//g' ${filename} && ./${filename} $STATIC_IP"
 
 bin\pscp -q -i ssh\${sshKey} root@${vm2ipv4}:summary.log $logdir
+
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 $second_result = CheckResults $sshKey $vm2ipv4
 Stop-VM -Name $vm2Name -ComputerName $hvServer -Force

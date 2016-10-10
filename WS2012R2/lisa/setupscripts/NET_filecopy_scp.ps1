@@ -228,6 +228,12 @@ foreach ($p in $params) {
     if ($fields[0].Trim() -eq "sshkey") {
         $sshkey = $fields[1].Trim()
     }
+    if ($fields[0].Trim() -eq "TestLogDir") {
+        $TestLogDir = $fields[1].Trim()
+    }
+    if ($fields[0].Trim() -eq "TestName") {
+        $TestName = $fields[1].Trim()
+    }
 }
 
 #
@@ -389,6 +395,26 @@ if (-not $?) {
     remove_files
     return $False
 }
+
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 $md5IsMatching = select-string -pattern $localChksum2 -path $logfilename
 if ($md5IsMatching -eq $null)

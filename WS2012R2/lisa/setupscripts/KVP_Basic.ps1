@@ -145,9 +145,13 @@ foreach ($p in $params)
     switch ($fields[0].Trim())
     {      
     "nonintrinsic" { $intrinsic = $False }
+    "sshKey" { $sshKey = $fields[1].Trim() }
+    "ipv4"         { $ipv4      = $fields[1].Trim() }
     "rootdir"      { $rootDir   = $fields[1].Trim() }
     "TC_COVERED"   { $tcCovered = $fields[1].Trim() }
     "DE_change"   { $deChanged = $fields[1].Trim() }
+    "TestLogDir" { $TestLogDir = $fields[1].Trim() }
+    "TestName"   { $TestName = $fields[1].Trim() }
     default  {}       
     }
 }
@@ -303,5 +307,27 @@ else #Non-Intrinsic
 		$testPassed = $False
 	}
 }
+
+. .\setupscripts\TCUtils.ps1
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
+"Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 return $testPassed

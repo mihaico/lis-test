@@ -87,16 +87,16 @@ function RunRemoteScript($remoteScript)
     $TestCompleted = "TestCompleted"
     $TestAborted   = "TestAborted"
     $TestRunning   = "TestRunning"
-    $timeout       = 6000    
+    $timeout       = 6000
 
-    "./${remoteScript} > ${remoteScript}.log" | out-file -encoding ASCII -filepath runtest.sh 
+    "./${remoteScript} > ${remoteScript}.log" | out-file -encoding ASCII -filepath runtest.sh
 
     echo y | .\bin\pscp -i ssh\${sshKey} .\runtest.sh root@${ipv4}:
     if (-not $?)
     {
        Write-Output "ERROR: Unable to copy runtest.sh to the VM"
        return $False
-    }      
+    }
 
     echo y | .\bin\pscp -i ssh\${sshKey} .\remote-scripts\ica\${remoteScript} root@${ipv4}:
     if (-not $?)
@@ -115,14 +115,14 @@ function RunRemoteScript($remoteScript)
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dos2unix runtest.sh  2> /dev/null"
     if (-not $?)
     {
-        Write-Output "ERROR: Unable to run dos2unix on runtest.sh" 
+        Write-Output "ERROR: Unable to run dos2unix on runtest.sh"
         return $False
     }
-    
+
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x ${remoteScript}   2> /dev/null"
     if (-not $?)
     {
-        Write-Output "ERROR: Unable to chmod +x ${remoteScript}" 
+        Write-Output "ERROR: Unable to chmod +x ${remoteScript}"
         return $False
     }
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x runtest.sh  2> /dev/null"
@@ -134,7 +134,7 @@ function RunRemoteScript($remoteScript)
 
     # Run the script on the vm
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "./runtest.sh 2> /dev/null"
-    
+
     # Return the state file
     while ($timeout -ne 0 )
     {
@@ -148,35 +148,35 @@ function RunRemoteScript($remoteScript)
             if ($null -ne $contents)
             {
                     if ($contents -eq $TestCompleted)
-                    {                    
-                        Write-Output "Info : state file contains Testcompleted"              
+                    {
+                        Write-Output "Info : state file contains Testcompleted"
                         $retValue = $True
-                        break                                             
-                                     
+                        break
+
                     }
 
                     if ($contents -eq $TestAborted)
                     {
-                         Write-Output "Info : State file contains TestAborted failed. "                                  
+                         Write-Output "Info : State file contains TestAborted failed. "
                          break
-                          
+
                     }
                     #Start-Sleep -s 1
-                    $timeout-- 
+                    $timeout--
 
                     if ($timeout -eq 0)
-                    {                        
-                        Write-Output "Error : Timed out on Test Running , Exiting test execution."                    
-                        break                                               
-                    }                                
-                  
-            }    
+                    {
+                        Write-Output "Error : Timed out on Test Running , Exiting test execution."
+                        break
+                    }
+
+            }
             else
             {
                 Write-Output "Warn : state file is empty"
                 break
             }
-           
+
         }
         else
         {
@@ -187,15 +187,15 @@ function RunRemoteScript($remoteScript)
     else #
     {
          Write-Output "Error : pscp exit status = $sts"
-         Write-Output "Error : unable to pull state.txt from VM." 
+         Write-Output "Error : unable to pull state.txt from VM."
          break
-    }     
+    }
     }
 
     # Get the logs
     $remoteScriptLog = $remoteScript+".log"
-    
-    bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteScriptLog} . 
+
+    bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteScriptLog} .
     $sts = $?
     if ($sts)
     {
@@ -207,27 +207,27 @@ function RunRemoteScript($remoteScript)
                     if ($null -ne ${TestLogDir})
                     {
                         move "${remoteScriptLog}" "${TestLogDir}\${remoteScriptLog}"
-                
+
                     }
 
-                    else 
+                    else
                     {
-                        Write-Output "INFO: $remoteScriptLog is copied in ${rootDir}"                                
-                    }                              
-                  
-            }    
+                        Write-Output "INFO: $remoteScriptLog is copied in ${rootDir}"
+                    }
+
+            }
             else
             {
-                Write-Output "Warn: $remoteScriptLog is empty"                
-            }           
+                Write-Output "Warn: $remoteScriptLog is empty"
+            }
         }
         else
         {
-             Write-Output "Warn: ssh reported success, but $remoteScriptLog file was not copied"             
+             Write-Output "Warn: ssh reported success, but $remoteScriptLog file was not copied"
         }
     }
-    
-    # Cleanup 
+
+    # Cleanup
     del state.txt -ErrorAction "SilentlyContinue"
     del runtest.sh -ErrorAction "SilentlyContinue"
 
@@ -303,7 +303,7 @@ $ipv4 = $null
 $TC_COVERED = $null
 $vhdFormat = $null
 
-$vmGeneration = $null 
+$vmGeneration = $null
 #
 # Parse the testParams string and make sure all
 # required test parameters have been specified.
@@ -389,8 +389,19 @@ foreach ($p in $params)
         $rootdir = $rValue
         Continue
     }
-}
 
+    if ($lValue -eq "TestLogDir")
+    {
+        $TestLogDir = $rValue
+        Continue
+    }
+
+    if ($lValue -eq "TestName")
+    {
+        $TestName = $rValue
+        Continue
+    }
+}
 if ($null -eq $rootdir)
 {
     "ERROR: Test parameter rootdir was not specified"
@@ -609,5 +620,27 @@ if ($vhdFinalSize -gt $vhdInitialSize)
 {
     "Info : The differencing disk grew in size from ${vhdInitialSize} to ${vhdFinalSize}"
 }
+
+
+#
+# Collect the log file from the client
+#
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+"Info: Collect storvsc.zip from ${remoteFile} to ${localFile}"
+bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 return $retVal

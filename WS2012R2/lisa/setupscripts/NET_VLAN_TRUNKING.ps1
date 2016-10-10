@@ -494,6 +494,8 @@ foreach ($p in $params)
     "VM2NAME" { $vm2Name = $fields[1].Trim() }
     "SshKey"  { $sshKey  = $fields[1].Trim() }
     "ipv4"    { $ipv4    = $fields[1].Trim() }
+    "TestLogDir" { $TestLogDir = $fields[1].Trim() }
+    "TestName"   { $TestName = $fields[1].Trim() }
     "VM_VLAN_ID" { $vlanId = $fields[1].Trim() }
     "NATIVE_VLAN_ID" { $nativeVlanId = $fields[1].Trim() }
     "STATIC_IP" { $vm1StaticIP = $fields[1].Trim() }
@@ -1344,6 +1346,26 @@ if ($retVal)
 
 	return $false
 }
+
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 # undo everything we did
 Set-VMNetworkAdapterVlan -VMNetworkAdapter $vm1Nic -Untagged

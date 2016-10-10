@@ -117,9 +117,10 @@ try
         "sshkey"        { $sshKey      = $val }
         "rootdir"       { $rootDir     = $val }
         "TC_COVERED"    { $tcCovered   = $val }
-        "TestLogDir"    { $testLogDir  = $val }
         "NIC_Name"      { $nicName     = $val }
         "Switch_Name"   { $switchName  = $val }
+        "TestLogDir"    { $TestLogDir = $val }
+        "TestName"      { $TestName = $val }
         default         { continue }
         }
     }
@@ -275,5 +276,25 @@ catch
 # If we made it here, everything worked
 #
 "Info : Test completed successfully"
+. .\setupscripts\TCUtils.ps1
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 return $True

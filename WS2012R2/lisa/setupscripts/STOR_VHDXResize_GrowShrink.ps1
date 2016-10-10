@@ -422,5 +422,25 @@ if (-not $($sts[-1]))
 
 "Info : The guest sees the new grow size ($growDiskSize) and the new shrink size ($shrinkDiskSize)"
 "Info : VHDx Resize - ${TC_COVERED} is Done"
+#
+# Collect the log file from the client
+#
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+"Info: Collect storvsc.zip from ${remoteFile} to ${localFile}"
+bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 return $True

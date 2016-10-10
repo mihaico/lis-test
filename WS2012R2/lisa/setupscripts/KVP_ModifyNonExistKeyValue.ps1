@@ -102,9 +102,13 @@ foreach ($p in $params)
     switch ($fields[0].Trim())
     {
     "key"        { $key       = $fields[1].Trim() }
+    "sshKey" { $sshKey = $fields[1].Trim() }
+    "ipv4"         { $ipv4      = $fields[1].Trim() }
     "value"      { $value     = $fields[1].Trim() }
     "rootDir"    { $rootDir   = $fields[1].Trim() }
     "tc_covered" { $tcCovered = $fields[1].Trim() }
+    "TestLogDir" { $TestLogDir = $fields[1].Trim() }
+    "TestName"   { $TestName = $fields[1].Trim() }
     default   {}  # unknown param - just ignore it
     }
 }        
@@ -184,6 +188,27 @@ $job = [wmi]$result.Job
 while($job.jobstate -lt 7) {
 	$job.get()
 }
+
+. .\setupscripts\TCUtils.ps1
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 if ($job.ErrorCode -ne 0)
 {

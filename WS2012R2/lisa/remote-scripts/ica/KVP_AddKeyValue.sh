@@ -109,4 +109,15 @@ fi
 echo "The Key value pair is added to the Pool:${Pool} successfully" >> ~/summary.log
 LogMsg "Updating test case state to completed"
 UpdateTestState $ICA_TESTCOMPLETED
+
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 exit 0

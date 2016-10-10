@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+    Linux on Hyper-V and Azure Test Code, ver. 1.0.0
+    Copyright (c) Microsoft Corporation
+
+    All rights reserved.
+    Licensed under the Apache License, Version 2.0 (the ""License"");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+    OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION
+    ANY IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR
+    PURPOSE, MERCHANTABLITY OR NON-INFRINGEMENT.
+
+    See the Apache Version 2.0 License for specific language governing
+    permissions and limitations under the License.
+-->
+
+<config>
+    <global>
+        <logfileRootDir>TestResults</logfileRootDir>
+        <defaultSnapshot>ICABase</defaultSnapshot>
+        <email>
+            <recipients>
+                <to>myself@mail.com</to>
+                <to>myboss@mail.com</to>
+            </recipients>
+            <sender>myself@mail.com</sender>
+            <subject>LISA VHDx Resize on WS2012R2</subject>
+            <smtpServer>smtp.your.company.com</smtpServer>
+        </email>
+    </global>
+
+    <testSuites>
+        <suite>
+            <suiteName>VHDxResize</suiteName>
+            <suiteTests>
+                <suiteTest>VHDxResizeToBigger512</suiteTest>
+                <suiteTest>VHDxResizeToBigger4096</suiteTest>
+                <suiteTest>VHDxResizeToBigger512_Dynamic_IDE</suiteTest>
+                <suiteTest>VHDxResizeToBigger512_Fixed_IDE</suiteTest>
+                <suiteTest>VHDxResizeToSmaller512</suiteTest>
+                <suiteTest>VHDxResizeToSmaller4096</suiteTest>
+                <suiteTest>VHDxResizeGrowShrink_SCSI</suiteTest>
+                <suiteTest>VHDxResizeGrowShrink_IDE</suiteTest>
+                <suiteTest>VHDxResizeGrowShrink_SCSI_Offline</suiteTest>
+                <suiteTest>VHDxResizeGrowFilesystem512</suiteTest>
+                <suiteTest>VHDxResizeGrowFilesystem4096</suiteTest>
+            </suiteTests>
+        </suite>
+    </testSuites>
+
+    <testCases>
+        <test>
+            <testName>VHDxResizeToBigger512</testName>
+            <testScript>SetupScripts\STOR_VHDXResize_Basic.ps1</testScript>
+            <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <testparams>
+                <param>Type=Dynamic</param>
+                <param>SectorSize=512</param>
+                <param>DefaultSize=3GB</param>
+                <param>NewSize=4GB</param>
+                <param>fileSystems=(ext4 ext3 xfs)</param>
+                <param>ControllerType=SCSI</param>
+                <param>TC_COVERED=STOR-VHDx-01a</param>
+            </testparams>
+        </test>
+
+        <test>
+            <testName>VHDxResizeToBigger4096</testName>
+            <testScript>SetupScripts\STOR_VHDXResize_Basic.ps1</testScript>
+            <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <testparams>
+                <param>Type=Dynamic</param>
+                <param>SectorSize=4096</param>
+                <param>DefaultSize=3GB</param>
+                <param>NewSize=4GB</param>
+                <param>fileSystems=(ext4 ext3 xfs)</param>
+                <param>ControllerType=SCSI</param>
+                <param>TC_COVERED=STOR-VHDx-01b</param>
+            </testparams>
+        </test>
+
+        <test>
+            <testName>VHDxResizeToBigger512_Fixed_IDE</testName>
+            <testScript>SetupScripts\STOR_VHDXResize_Basic.ps1</testScript>
+            <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <testparams>
+                <param>Type=Fixed</param>
+                <param>SectorSize=512</param>
+                <param>DefaultSize=1GB</param>
+                <param>NewSize=2GB</param>
+                <param>fileSystems=(ext4 ext3 xfs)</param>
+                <param>ControllerType=IDE</param>
+                <param>TC_COVERED=STOR-VHDx-105</param>
+             </testparams>
+       </test>
+
+       <test>
+            <testName>VHDxResizeToBigger512_Dynamic_IDE</testName>
+            <testScript>SetupScripts\STOR_VHDXResize_Basic.ps1</testScript>
+            <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <testparams>
+                <param>Type=Dynamic</param>
+                <param>SectorSize=512</param>
+                <param>DefaultSize=1GB</param>
+                <param>NewSize=4GB</param>
+                <param>fileSystems=(ext4 ext3 xfs)</param>
+                <param>ControllerType=IDE</param>
+                <param>TC_COVERED=STOR-VHDx-106</param>
+            </testparams>
+       </test>
+
+        <test>
+            <testName>VHDxResizeToSmaller512</testName>
+            <testScript>SetupScripts\STOR_VHDXResize_Basic.ps1</testScript>
+            <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <testparams>
+                <param>Type=Dynamic</param>
+                <param>SectorSize=512</param>
+                <param>DefaultSize=3GB</param>
+                <param>NewSize=2GB</param>
+                <param>fileSystems=(ext4 ext3 xfs)</param>
+                <param>ControllerType=SCSI</param>
+                <param>TC_COVERED=STOR-VHDx-02a</param>
+            </testparams>
+        </test>
+
+        <test>
+            <testName>VHDxResizeToSmaller4096</testName>
+            <testScript>SetupScripts\STOR_VHDXResize_Basic.ps1</testScript>
+            <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <testparams>
+                <param>Type=Dynamic</param>
+                <param>SectorSize=4096</param>
+                <param>DefaultSize=3GB</param>
+                <param>NewSize=2GB</param>
+                <param>fileSystems=(ext4 ext3 xfs)</param>
+                <param>ControllerType=SCSI</param>
+                <param>TC_COVERED=STOR-VHDx-02b</param>
+            </testparams>
+        </test>
+
+        <test>
+            <testName>VHDxResizeGrowShrink_SCSI</testName>
+            <testScript>SetupScripts\STOR_VHDXResize_GrowShrink.ps1</testScript>
+            <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <testparams>
+                <param>Type=Dynamic</param>
+                <param>SectorSize=512</param>
+                <param>DefaultSize=3GB</param>
+                <param>growSize=4GB</param>
+                <param>shrinkSize=3GB</param>
+                <param>fileSystems=(ext4 ext3 xfs)</param>
+                <param>ControllerType=SCSI</param>
+                <param>TC_COVERED=STOR-VHDx-03a</param>
+            </testparams>
+        </test>
+
+      <test>
+          <testName>VHDxResizeGrowShrink_IDE</testName>
+          <testScript>SetupScripts\STOR_VHDXResize_GrowShrink.ps1</testScript>
+          <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+          <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+          <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+          <timeout>600</timeout>
+          <onError>Continue</onError>
+          <testparams>
+              <param>Type=Dynamic</param>
+              <param>SectorSize=512</param>
+              <param>DefaultSize=3GB</param>
+              <param>growSize=4GB</param>
+              <param>shrinkSize=3GB</param>
+              <param>fileSystems=(ext4 ext3 xfs)</param>
+              <param>ControllerType=IDE</param>
+              <param>TC_COVERED=STOR-VHDx-03b</param>
+          </testparams>
+        </test>
+
+        <test>
+           <testName>VHDxResizeGrowShrink_SCSI_Offline</testName>
+           <testScript>SetupScripts\STOR_VHDXResize_GrowShrink.ps1</testScript>
+           <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+           <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+           <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+           <timeout>600</timeout>
+           <onError>Continue</onError>
+           <testparams>
+               <param>Type=Dynamic</param>
+               <param>SectorSize=512</param>
+               <param>DefaultSize=3GB</param>
+               <param>growSize=4GB</param>
+               <param>shrinkSize=3GB</param>
+               <param>fileSystems=(ext4 ext3 xfs)</param>
+               <param>ControllerType=SCSI</param>
+               <param>Offline=True</param>
+               <param>TC_COVERED=STOR-VHDx-03c</param>
+           </testparams>
+        </test>
+
+        <test>
+            <testName>VHDxResizeGrowFilesystem512</testName>
+            <testScript>SetupScripts\STOR_VHDXResize_GrowFS.ps1</testScript>
+            <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <testparams>
+                <param>Type=Dynamic</param>
+                <param>SectorSize=512</param>
+                <param>DefaultSize=3GB</param>
+                <param>NewSize=4GB</param>
+                <param>fileSystems=(ext4 ext3 xfs)</param>
+                <param>ControllerType=SCSI</param>
+                <param>TC_COVERED=STOR-VHDx-04a</param>
+            </testparams>
+        </test>
+
+        <test>
+            <testName>VHDxResizeGrowFilesystem4096</testName>
+            <testScript>SetupScripts\STOR_VHDXResize_GrowFS.ps1</testScript>
+            <setupScript>SetupScripts\Add-VHDXForResize.ps1</setupScript>
+            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
+            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
+         <uploadFiles>
+            <file>storvsc.zip</file>
+         </uploadFiles>
+            <timeout>600</timeout>
+            <onError>Continue</onError>
+            <testparams>
+                <param>Type=Dynamic</param>
+                <param>SectorSize=4096</param>
+                <param>DefaultSize=3GB</param>
+                <param>NewSize=4GB</param>
+                <param>fileSystems=(ext4 ext3 xfs)</param>
+                <param>ControllerType=SCSI</param>
+                <param>TC_COVERED=STOR-VHDx-04b</param>
+            </testparams>
+        </test>
+
+    </testCases>
+
+    <VMs>
+        <vm>
+         <hvServer>localhost</hvServer>
+         <vmName>centos_3</vmName>
+         <os>Linux</os>
+         <ipv4>192.168.126.122</ipv4>
+         <sshKey>rhel5_id_rsa.ppk</sshKey>
+            <suite>VHDxResize</suite>
+        </vm>
+    </VMs>
+</config>

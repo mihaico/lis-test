@@ -252,6 +252,8 @@ foreach ($p in $params)
         "ipv4" { $ipv4 = $fields[1].Trim() }
         "rootdir" { $rootDir = $fields[1].Trim() }
         "TC_COVERED" { $TC_COVERED = $fields[1].Trim() }
+        "TestLogDir" { $TestLogDir = $fields[1].Trim() }
+        "TestName"   { $TestName = $fields[1].Trim() }
         default  {}          
         }
 }
@@ -322,15 +324,15 @@ if (-not $?)
 }
 
 # Check to see Linux VM is running FCOPY daemon 
-$sts = RunRemoteScript "FCOPY_Check_Daemon.sh"
-if (-not $sts[-1])
-{
-    Write-Output "ERROR executing FCOPY_Check_Daemon.sh on VM. Exiting test case!" >> $summaryLog
-    Write-Output "ERROR: Running FCOPY_Check_Daemon.sh script failed on VM!"
-    return $False
-}
-Remove-Item -Path "FCOPY_Check_Daemon.sh.log" -Force
-Write-Output "FCOPY Daemon is running"
+#$sts = RunRemoteScript "FCOPY_Check_Daemon.sh"
+#if (-not $sts[-1])
+#{
+#    Write-Output "ERROR executing FCOPY_Check_Daemon.sh on VM. Exiting test case!" >> $summaryLog
+#    Write-Output "ERROR: Running FCOPY_Check_Daemon.sh script failed on VM!"
+#    return $False
+#}
+#Remove-Item -Path "FCOPY_Check_Daemon.sh.log" -Force
+#Write-Output "FCOPY Daemon is running"
 
 #
 # Creating the test file for sending on VM
@@ -453,7 +455,6 @@ elseif (($Error.Count -gt 0) -and ($Error[0].Exception.Message -like "*failed to
     Write-Output "Test failed! File could not be copied as it already exists on guest VM '${vmName}'" | Tee-Object -Append -file $summaryLog
     return $False
 }
-RemoveTestFile
 
 #
 # Run the remote script to get MD5 checksum on VM
@@ -475,6 +476,27 @@ $logfilename = ".\$remoteScript.log"
 Get-Content $logfilename
 Write-Output "###################`n"
 Write-Output "$remoteScript execution on VM: Success" 
+RemoveTestFile
+
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 #
 # Check if checksums are matching
@@ -493,6 +515,26 @@ else
     $results = "Passed"
     $retVal = $True
 }
+
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 # Removing the temporary test file
 Remove-Item -Path \\$hvServer\$file_path_formatted -Force

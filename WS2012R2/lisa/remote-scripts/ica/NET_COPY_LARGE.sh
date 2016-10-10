@@ -594,6 +594,16 @@ fi
 # delete local file again
 [ $NO_DELETE -eq 0 ] && rm -f "$HOME"/$output_file
 
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 UpdateSummary "Checksums of file match. Test successful"
 LogMsg "Updating test case state to completed"
 SetTestStateCompleted

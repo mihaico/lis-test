@@ -190,9 +190,17 @@ foreach ($p in $params) {
 	if ($fields[0].Trim() -eq "ipv4") {
 		$IPv4 = $fields[1].Trim()
     }
-	if ($fields[0].Trim() -eq "sshkey") {
-        $sshkey = $fields[1].Trim()
+	if ($fields[0].Trim() -eq "sshKey") {
+        $sshKey = $fields[1].Trim()
     }
+    if ($fields[0].Trim() -eq "TestLogDir")
+    {
+        $TestLogDir = $fields[1].Trim()
+        }
+    if ($fields[0].Trim() -eq "TestName")
+    {
+        $TestName = $fields[1].Trim()
+        }
 }
 
 #
@@ -335,5 +343,25 @@ Remove-Item -Path \\$hvServer\$file_path_formatted -Force
 if (-not $?) {
     Write-Output "ERROR: Cannot remove the test file '${testfile}'!" | Tee-Object -Append -file $summaryLog
 }
+
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 return $retVal

@@ -85,7 +85,7 @@ LinuxRelease()
 #######################################################################
 iscsiSTOP()
 {
-    ssh -i /root/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no root@"$1" "service iscsitarget stop"
+    ssh -i /root/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no root@"$1" "service iscsi-target stop"
     return $?
 }
 
@@ -275,5 +275,16 @@ else
     UpdateSummary "Test failed. Initial sd count $initialSdCount, final sd count $finalSdCount"
     exit 1
 fi
+
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 UpdateTestState $ICA_TESTCOMPLETED
 exit 0
