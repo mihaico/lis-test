@@ -791,7 +791,7 @@ $retVal = pingVMs $ipv4 $vm2StaticIP $sshKey 10 $vm1MacAddress
 if (-not $retVal)
 {
     "Unable to ping $vm2StaticIP from $vm1StaticIP with MAC $vm1MacAddress"
-    return $false
+    $retVal = $False
 }
 
 "Successfully pinged"
@@ -802,7 +802,7 @@ $retVal = pingVMs $vm2ipv4 $vm1StaticIP $sshKey 10 $vm2MacAddress
 if (-not $retVal)
 {
     "Unable to ping $vm1StaticIP from $vm2StaticIP with MAC $vm2MacAddress"
-    return $false
+    $retVal = $False
 }
 
 "Successfully pinged"
@@ -815,7 +815,7 @@ $retVal = pingVMs $ipv4 $failIP1 $sshKey 10 $vm1MacAddress
 if ($retVal)
 {
     "Ping from vm1: Able to ping $failIP1 from $vm1StaticIP with MAC $vm2MacAddress although it should not have worked!"
-    return $false
+    $retVal = $False
 }
 
 "Failed to ping (as expected)"
@@ -827,7 +827,7 @@ $retVal = pingVMs $vm2ipv4 $failIP2 $sshKey 10 $vm1MacAddress
 if ($retVal)
 {
     "Ping from vm2: Able to ping $failIP2 from $vm2StaticIP with MAC $vm2MacAddress although it should not have worked!"
-    return $false
+    $retVal = $False
 }
 
 "Failed to ping (as expected)"
@@ -862,4 +862,4 @@ if (-not $?)
 
 "Test successful!"
 
-return $true
+return $retVal

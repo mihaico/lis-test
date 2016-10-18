@@ -40,15 +40,15 @@
         <suite>
             <suiteName>KVP</suiteName>
             <suiteTests>
-                <!--<suiteTest>SQM_Basic</suiteTest>-->
+                <suiteTest>SQM_Basic</suiteTest>
                 <suiteTest>KVP_Basic</suiteTest>
-                <!--<suiteTest>KVP_Add_Key_Values</suiteTest>-->
-                <!--<suiteTest>KVP_Modify_Key_Values</suiteTest>-->
+                <suiteTest>KVP_Add_Key_Values</suiteTest>
+                <suiteTest>KVP_Modify_Key_Values</suiteTest>
                 <suiteTest>KVP_Remove_Key_Values</suiteTest>
-                <!--<suiteTest>KVP_Push_Key_Values</suiteTest>-->
+                <suiteTest>KVP_Push_Key_Values</suiteTest>
                 <suiteTest>KVP_DeleteNonExistKVPOnGuest</suiteTest>
                 <suiteTest>KVP_ModifyNonExistKVPOnGuest</suiteTest>
-                <!--<suiteTest>KVP_VerifyHostInjectedItems</suiteTest>-->
+                <suiteTest>KVP_VerifyHostInjectedItems</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>

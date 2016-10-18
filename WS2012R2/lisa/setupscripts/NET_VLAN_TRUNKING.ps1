@@ -492,7 +492,7 @@ foreach ($p in $params)
     switch ($fields[0].Trim())
     {
     "VM2NAME" { $vm2Name = $fields[1].Trim() }
-    "SshKey"  { $sshKey  = $fields[1].Trim() }
+    "sshKey"  { $sshKey  = $fields[1].Trim() }
     "ipv4"    { $ipv4    = $fields[1].Trim() }
     "TestLogDir" { $TestLogDir = $fields[1].Trim() }
     "TestName"   { $TestName = $fields[1].Trim() }
@@ -827,7 +827,7 @@ else
                     }
                 }
 
-                return $false
+                return $True
             }
             break
         }
@@ -851,7 +851,7 @@ else
                     }
                 }
             }
-            return $false
+            return $True
         }
     }
 }
@@ -1017,7 +1017,25 @@ Stop-VM -VMName $vm2name -ComputerName $hvServer -force
             }
         }
     }
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
 
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 	return $false
 }
 
@@ -1109,6 +1127,25 @@ if (-not $?)
 "Trying to ping from vm1 with mac $vm1MacAddress to $vm2StaticIP "
 # try to ping
 $retVal = pingVMs $ipv4 $vm2StaticIP $sshKey 10 $vm1MacAddress $vlanID
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 "main script: retval should be false. Its value is [ $retVal ]"
 if (-not $retVal)
@@ -1346,26 +1383,6 @@ if ($retVal)
 
 	return $false
 }
-
-# Collect gcov
-RunRemoteScript "collect_gcov_data.sh"
-
-$remoteFile = "gcov_data.zip"
-$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
-.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
-$sts = $?
-if ($sts)
-{
-    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
-    if (test-path $remoteFile)
-    {
-        $contents = Get-Content -Path $remoteFile
-        if ($null -ne $contents)
-        {
-                if ($null -ne ${TestLogDir})
-                {
-                    move "${remoteFile}" "${localFile}"
-}}}}
 
 # undo everything we did
 Set-VMNetworkAdapterVlan -VMNetworkAdapter $vm1Nic -Untagged

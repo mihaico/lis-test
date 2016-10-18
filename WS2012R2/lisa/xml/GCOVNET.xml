@@ -38,14 +38,14 @@
         <suite>
             <suiteName>Network</suiteName>
             <suiteTests>
-                <!--<suiteTest>External</suiteTest>-->
-                <!--<suiteTest>InternalNetwork</suiteTest>-->
+                <suiteTest>External</suiteTest>
+                <suiteTest>InternalNetwork</suiteTest>
                 <suiteTest>GuestOnlyNetwork</suiteTest>
-                <!--<suiteTest>MultipleNIC</suiteTest>-->
-                <!--<suiteTest>LegacySyntheticNetwork</suiteTest>-->
-                <!--<suiteTest>StaticMAC</suiteTest>-->
-                <!--<suiteTest>NetworkMode</suiteTest>-->
-                <!--<suiteTest>ChangeNetTypeInternal</suiteTest>-->
+                <suiteTest>MultipleNIC</suiteTest>
+                <suiteTest>LegacySyntheticNetwork</suiteTest>
+                <suiteTest>StaticMAC</suiteTest>
+                <suiteTest>NetworkMode</suiteTest>
+                <suiteTest>ChangeNetTypeInternal</suiteTest>
                 <suiteTest>ChangeNetTypeGuest</suiteTest>
                 <suiteTest>JumboFrame</suiteTest>
                 <suiteTest>OperState</suiteTest>
@@ -57,8 +57,8 @@
                 <suiteTest>CopyFileScp</suiteTest>
                 <suiteTest>CheckKeywithEthtool</suiteTest>
                 <!-- The following tests require a Generation 2 VM -->
-                <suiteTest>HotAddMultiNIC</suiteTest>
-                <suiteTest>HotAddRemoveNic</suiteTest>
+                <!--<suiteTest>HotAddMultiNIC</suiteTest>-->
+                <!--<suiteTest>HotAddRemoveNic</suiteTest>-->
             </suiteTests>
         </suite>
     </testSuites>

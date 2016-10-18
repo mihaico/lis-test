@@ -172,7 +172,7 @@ else
 			LogMsg "$msg"
 			UpdateSummary "$msg"
 			SetTestStateAborted
-			exit 30
+#			exit 30
 		fi
 
 	done

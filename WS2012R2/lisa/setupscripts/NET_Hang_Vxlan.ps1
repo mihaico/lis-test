@@ -241,7 +241,7 @@ foreach ($p in $params)
     switch ($fields[0].Trim())
     {
     "VM2NAME" { $vm2Name = $fields[1].Trim() }
-    "SshKey"  { $sshKey  = $fields[1].Trim() }
+    "sshKey"  { $sshKey  = $fields[1].Trim() }
     "ipv4"    { $ipv4    = $fields[1].Trim() }
     "TestLogDir" { $TestLogDir = $fields[1].Trim() }
     "TestName"   { $TestName = $fields[1].Trim() }
@@ -627,8 +627,6 @@ if (-not $retVal)
 # execute command
 $retVal = SendCommandToVM $vm2ipv4 $sshKey "cd /root && chmod u+x ${filename} && sed -i 's/\r//g' ${filename} && ./${filename} $STATIC_IP"
 
-bin\pscp -q -i ssh\${sshKey} root@${vm2ipv4}:summary.log $logdir
-
 # Collect gcov
 RunRemoteScript "collect_gcov_data.sh"
 
@@ -648,6 +646,10 @@ if ($sts)
                 {
                     move "${remoteFile}" "${localFile}"
 }}}}
+
+
+
+bin\pscp -q -i ssh\${sshKey} root@${vm2ipv4}:summary.log $logdir
 
 $second_result = CheckResults $sshKey $vm2ipv4
 Stop-VM -Name $vm2Name -ComputerName $hvServer -Force

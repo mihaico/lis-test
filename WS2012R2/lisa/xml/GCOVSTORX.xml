@@ -18,29 +18,29 @@
         <suite>
             <suiteName>STOR_VHDx</suiteName>
             <suiteTests>
-                <!--<suiteTest>VHDx_IDE_0_1_Dynamic</suiteTest>-->
-                <!--<suiteTest>VHDx_MultiDiskSCSI_Dynamic</suiteTest>-->
-                <!--<suiteTest>VHDx_IDE_0_1_Fixed</suiteTest>-->
-                <!--<suiteTest>VHDx_MultiDiskSCSI_Fixed</suiteTest>-->
-                <!--<suiteTest>VHDx_AddDiff_Disk_IDE</suiteTest>-->
-                <!--<suiteTest>VHDx_AddDiff_Disk_SCSI</suiteTest>-->
-                <!--<suiteTest>VHDx_HotADD_Multi_Dynamic_SCSI</suiteTest>-->
-                <!--<suiteTest>VHDx_HotRemove_Multi_Dynamic_SCSI</suiteTest>-->
-                <!--<suiteTest>VHDx_HotADD_Dynamic_SCSI_SMP</suiteTest>-->
-                <!--<suiteTest>VHDx_HotRemove_Dynamic_SCSI_SMP</suiteTest>-->
-                <!--<suiteTest>VHDx_DiskHotPlugUnplug</suiteTest>-->
-                <!--<suiteTest>VHDx_DiskHotPlugUnplug_Multi_SCSI</suiteTest>-->
-                <!--<suiteTest>VHDx_4k_IDE_0_1_Dynamic</suiteTest>-->
-                <!--<suiteTest>VHDx_4k_MultiDiskSCSI_Dynamic</suiteTest>-->
-                <!--<suiteTest>VHDx_4k_IDE_0_1_Fixed</suiteTest>-->
-                <!--<suiteTest>VHDx_4k_MultiDiskSCSI_Fixed</suiteTest>-->
-                <!--<suiteTest>VHDx_4k_HotADD_Multi_Dynamic_SCSI</suiteTest>-->
-                <!--<suiteTest>VHDx_4k_HotRemove_Multi_Dynamic_SCSI</suiteTest>-->
-                <!--<suiteTest>VHDx_SCSI_Dynamic_Local_Copy_File</suiteTest>-->
+                <suiteTest>VHDx_IDE_0_1_Dynamic</suiteTest>
+                <suiteTest>VHDx_MultiDiskSCSI_Dynamic</suiteTest>
+                <suiteTest>VHDx_IDE_0_1_Fixed</suiteTest>
+                <suiteTest>VHDx_MultiDiskSCSI_Fixed</suiteTest>
+                <suiteTest>VHDx_AddDiff_Disk_IDE</suiteTest>
+                <suiteTest>VHDx_AddDiff_Disk_SCSI</suiteTest>
+                <suiteTest>VHDx_HotADD_Multi_Dynamic_SCSI</suiteTest>
+                <suiteTest>VHDx_HotRemove_Multi_Dynamic_SCSI</suiteTest>
+                <suiteTest>VHDx_HotADD_Dynamic_SCSI_SMP</suiteTest>
+                <suiteTest>VHDx_HotRemove_Dynamic_SCSI_SMP</suiteTest>
+                <suiteTest>VHDx_DiskHotPlugUnplug</suiteTest>
+                <suiteTest>VHDx_DiskHotPlugUnplug_Multi_SCSI</suiteTest>
+                <suiteTest>VHDx_4k_IDE_0_1_Dynamic</suiteTest>
+                <suiteTest>VHDx_4k_MultiDiskSCSI_Dynamic</suiteTest>
+                <suiteTest>VHDx_4k_IDE_0_1_Fixed</suiteTest>
+                <suiteTest>VHDx_4k_MultiDiskSCSI_Fixed</suiteTest>
+                <suiteTest>VHDx_4k_HotADD_Multi_Dynamic_SCSI</suiteTest>
+                <suiteTest>VHDx_4k_HotRemove_Multi_Dynamic_SCSI</suiteTest>
+                <suiteTest>VHDx_SCSI_Dynamic_Local_Copy_File</suiteTest>
                 <suiteTest>VHDx_SCSI_Dynamic_Wget_File</suiteTest>
-                <!--<suiteTest>VHDx_SCSI_Dynamic_NFS_File</suiteTest>-->
-                <!--<suiteTest>VHDx_Mount_NFS</suiteTest>-->
-                <!--<suiteTest>VHDx_Verify_SectorSize</suiteTest>-->
+                <suiteTest>VHDx_SCSI_Dynamic_NFS_File</suiteTest>
+                <suiteTest>VHDx_Mount_NFS</suiteTest>
+                <suiteTest>VHDx_Verify_SectorSize</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
