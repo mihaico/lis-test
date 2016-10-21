@@ -630,7 +630,7 @@ if (-not $vm2nic)
 $scriptAddedNIC = $true
 
 
-"Tests VLAN trunking"
+"Tests VLAN tagging"
 
 if (-not $netmask)
 {
@@ -674,7 +674,6 @@ else
 #
 # LIS Started VM1, so start VM2
 #
-
 if (Get-VM -Name $vm2Name -ComputerName $hvServer|  Where { $_.State -notlike "Running" })
 {
     Start-VM -Name $vm2Name -ComputerName $hvServer
@@ -694,13 +693,12 @@ if (-not (WaitForVMToStartKVP $vm2Name $hvServer $timeout))
 }
 
 # get vm2 ipv4
-
 $vm2ipv4 = GetIPv4 $vm2Name $hvServer
 
 "netmask = $netmask"
 "Test vlan id = ${vlanID}"
 
-# wait for ssh to startg
+# wait for ssh to start
 $timeout = 120 #seconds
 if (-not (WaitForVMToStartSSH $vm2ipv4 $timeout))
 {
