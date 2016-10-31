@@ -1021,7 +1021,7 @@ Stop-VM -VMName $vm2name -ComputerName $hvServer -force
 RunRemoteScript "collect_gcov_data.sh"
 
 $remoteFile = "gcov_data.zip"
-$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
 .\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
 $sts = $?
 if ($sts)
@@ -1131,7 +1131,7 @@ $retVal = pingVMs $ipv4 $vm2StaticIP $sshKey 10 $vm1MacAddress $vlanID
 RunRemoteScript "collect_gcov_data.sh"
 
 $remoteFile = "gcov_data.zip"
-$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
 .\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
 $sts = $?
 if ($sts)

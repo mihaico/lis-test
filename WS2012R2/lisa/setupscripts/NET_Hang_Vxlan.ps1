@@ -631,7 +631,7 @@ $retVal = SendCommandToVM $vm2ipv4 $sshKey "cd /root && chmod u+x ${filename} &&
 RunRemoteScript "collect_gcov_data.sh"
 
 $remoteFile = "gcov_data.zip"
-$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
 .\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
 $sts = $?
 if ($sts)

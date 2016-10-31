@@ -38,17 +38,17 @@
         <suite>
             <suiteName>Network</suiteName>
             <suiteTests>
-                <!--<suiteTest>External</suiteTest>-->
-                <!--<suiteTest>GuestOnlyNetwork</suiteTest>-->
-                <!--<suiteTest>MultipleNIC</suiteTest>-->
-                <!--<suiteTest>LegacySyntheticNetwork</suiteTest>-->
-                <!--<suiteTest>StaticMAC</suiteTest>-->
-                <!--<suiteTest>NetworkMode</suiteTest>-->
-                <!--<suiteTest>JumboFrame</suiteTest>-->
-                <!--<suiteTest>OperState</suiteTest>-->
+                <suiteTest>External</suiteTest>
+                <suiteTest>GuestOnlyNetwork</suiteTest>
+                <suiteTest>MultipleNIC</suiteTest>
+                <suiteTest>LegacySyntheticNetwork</suiteTest>
+                <suiteTest>StaticMAC</suiteTest>
+                <suiteTest>NetworkMode</suiteTest>
+                <suiteTest>JumboFrame</suiteTest>
+                <suiteTest>OperState</suiteTest>
                 <suiteTest>CopyLargeFile</suiteTest>
-                <!--<suiteTest>VlanTagging</suiteTest>-->
-                <!--<suiteTest>VlanTrunking</suiteTest>-->
+                <suiteTest>VlanTagging</suiteTest>
+                <suiteTest>VlanTrunking</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>

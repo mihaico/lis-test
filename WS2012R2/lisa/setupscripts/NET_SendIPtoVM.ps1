@@ -271,6 +271,7 @@ if (-not $ipv4) {
 sleep 60
 
 $tempipv4VM2 = Get-VMNetworkAdapter -VMName $vm2Name -ComputerName $vm2Server | Where-object {$_.MacAddress -like "$vm2MacAddress"} | Select -Expand IPAddresses
+if($tempipv4VM2 -isnot [system.array]) { $tempipv4VM2 = @($tempipv4VM2)}
 $testipv4VM2 = $tempipv4VM2[0]
 $testipv6VM2 = $tempipv4VM2[1]
 

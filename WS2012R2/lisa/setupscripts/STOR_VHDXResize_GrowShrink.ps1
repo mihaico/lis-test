@@ -427,8 +427,8 @@ if (-not $($sts[-1]))
 #
 
 $remoteFile = "gcov_data.zip"
-$localFile = "${TestLogDir}\${vmName}_${TestName}_storvsc.zip"
-"Info: Collect storvsc.zip from ${remoteFile} to ${localFile}"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
+"Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
 bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
 $sts = $?
 if ($sts)

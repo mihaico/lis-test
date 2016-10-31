@@ -61,7 +61,7 @@
             <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
             <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -83,7 +83,7 @@
             <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
             <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -105,7 +105,7 @@
             <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
             <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -127,7 +127,7 @@
             <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
             <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -149,7 +149,7 @@
             <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
             <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -171,7 +171,7 @@
             <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
             <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -193,7 +193,7 @@
             <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
             <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -216,7 +216,7 @@
           <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
           <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
           <timeout>600</timeout>
           <onError>Continue</onError>
@@ -239,7 +239,7 @@
            <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
            <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
            <timeout>600</timeout>
            <onError>Continue</onError>
@@ -263,7 +263,7 @@
             <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
             <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
             <timeout>600</timeout>
             <onError>Continue</onError>
@@ -285,7 +285,7 @@
             <cleanupScript>SetupScripts\Remove-VHDXHardDisk.ps1</cleanupScript>
             <files>remote-scripts/ica/STOR_VHDXResize_ReadWrite.sh,remote-scripts/ica/collect_gcov_data.sh</files>
          <uploadFiles>
-            <file>storvsc.zip</file>
+            <file>gcov_data.zip</file>
          </uploadFiles>
             <timeout>600</timeout>
             <onError>Continue</onError>
