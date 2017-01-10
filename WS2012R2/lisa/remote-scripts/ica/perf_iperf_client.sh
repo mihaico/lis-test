@@ -23,7 +23,7 @@
 
 #######################################################################
 #
-# perf_iperf_panorama_client.sh
+# perf_iperf_client.sh
 #
 # Description:
 #     For the test to run you have to place the iperf tool package in the
@@ -41,6 +41,8 @@
 #     TEST_SIGNAL_FILE: the signal file send by client side to sync up the number of test connections
 #     TEST_RUN_LOG_FOLDER: the log folder name. sar log and top log will be saved in this folder for further analysis
 #     IPERF3_TEST_CONNECTION_POOL: the list of iperf3 connections need to be tested
+#	  BANDWIDTH: bandwith used
+#	  IPERF3_BUFFER: buffer size used for testing
 #
 #######################################################################
 
@@ -149,7 +151,7 @@ if [ "${STATIC_IP:="UNDEFINED"}" = "UNDEFINED" ]; then
 fi
 
 if [ "${NETMASK:="UNDEFINED"}" = "UNDEFINED" ]; then
-    NETMASK="255.255.255.2"
+    NETMASK="255.255.255.0"
     msg="Error: the NETMASK test parameter is missing, default value will be used: 255.255.255.0"
     LogMsg "${msg}"
     echo "${msg}" >> ~/summary.log
@@ -165,6 +167,18 @@ fi
 
 if [ "${IPERF3_PROTOCOL:="UNDEFINED"}" = "UNDEFINED" ]; then
     msg="Info: no IPERF3_PROTOCOL was specified, assuming default TCP"
+    LogMsg "${msg}"
+    echo "${msg}" >> ~/summary.log
+fi
+
+if [ "${IPERF3_BUFFER:="UNDEFINED"}" = "UNDEFINED" ]; then
+    msg="Info: no IPERF3_BUFFER was specified, assuming default buffer size."
+    LogMsg "${msg}"
+    echo "${msg}" >> ~/summary.log
+fi
+
+if [ "${BANDWIDTH:="UNDEFINED"}" = "UNDEFINED" ]; then
+    msg="Info: no BANDWIDTH was specified, assuming default value."
     LogMsg "${msg}"
     echo "${msg}" >> ~/summary.log
 fi
@@ -403,6 +417,23 @@ redhat_5|redhat_6)
             UpdateTestState $ICA_TESTFAILED
             exit 85
         fi
+        chkconfig iptables off
+        if [ $? -ne 0 ]; then
+            msg="Error: Failed to turn off iptables. Continuing"
+            LogMsg "${msg}"
+            echo "${msg}" >> ~/summary.log
+        fi
+    fi
+    LogMsg "Check ip6tables status on RHEL"
+    service ip6tables status
+    if [ $? -ne 3 ]; then
+        LogMsg "Disabling firewall on Redhat"
+        iptables -F
+        if [ $? -ne 0 ]; then
+            msg="Error: Failed to flush ip6tables rules. Continuing"
+            LogMsg "${msg}"
+            echo "${msg}" >> ~/summary.log
+        fi
         service ip6tables stop
         if [ $? -ne 0 ]; then
             msg="Error: Failed to stop ip6tables"
@@ -411,9 +442,9 @@ redhat_5|redhat_6)
             UpdateTestState $ICA_TESTFAILED
             exit 85
         fi
-        chkconfig iptables off
+        chkconfig ip6tables off
         if [ $? -ne 0 ]; then
-            msg="Error: Failed to turn off iptables. Continuing"
+            msg="Error: Failed to turn off ip6tables. Continuing"
             LogMsg "${msg}"
             echo "${msg}" >> ~/summary.log
         fi
@@ -458,6 +489,31 @@ redhat_7)
             exit 85
         fi
         chkconfig iptables off
+        if [ $? -ne 0 ]; then
+            msg="Error: Failed to turn off iptables. Continuing"
+            LogMsg "${msg}"
+            echo "${msg}" >> ~/summary.log
+        fi
+    fi
+
+    LogMsg "Check ip6tables status on RHEL7"
+    service ip6tables status
+    if [ $? -ne 3 ]; then
+        ip6tables -F;
+        if [ $? -ne 0 ]; then
+            msg="Error: Failed to flush ip6tables rules. Continuing"
+            LogMsg "${msg}"
+            echo "${msg}" >> ~/summary.log
+        fi
+        service ip6tables stop
+        if [ $? -ne 0 ]; then
+            msg="Error: Failed to stop ip6tables"
+            LogMsg "${msg}"
+            echo "${msg}" >> ~/summary.log
+            UpdateTestState $ICA_TESTFAILED
+            exit 85
+        fi
+        chkconfig ip6tables off
         if [ $? -ne 0 ]; then
             msg="Error: Failed to turn off iptables. Continuing"
             LogMsg "${msg}"
@@ -552,6 +608,31 @@ cd ~
 dos2unix ~/*.sh
 chmod 755 ~/*.sh
 
+function get_tx_bytes(){
+    # RX bytes:66132495566 (66.1 GB)  TX bytes:3067606320236 (3.0 TB)
+    Tx_bytes=`ifconfig $ETH_NAME | grep "TX bytes"   | awk -F':' '{print $3}' | awk -F' ' ' {print $1}'`
+    
+    if [ "x$Tx_bytes" == "x" ]
+    then
+        #TX packets 223558709  bytes 15463202847 (14.4 GiB)
+        Tx_bytes=`ifconfig $ETH_NAME| grep "TX packets"| awk '{print $5}'`
+    fi
+    echo $Tx_bytes
+
+}
+
+function get_tx_pkts(){
+    # TX packets:543924452 errors:0 dropped:0 overruns:0 carrier:0
+    Tx_pkts=`ifconfig $ETH_NAME | grep "TX packets" | awk -F':' '{print $2}' | awk -F' ' ' {print $1}'`
+
+    if [ "x$Tx_pkts" == "x" ]
+    then
+        #TX packets 223558709  bytes 15463202847 (14.4 GiB)
+        Tx_pkts=`ifconfig $ETH_NAME| grep "TX packets"| awk '{print $3}'`        
+    fi
+    echo $Tx_pkts   
+}
+
 # set static IPs for test interfaces
 declare -i __iterator=0
 
@@ -576,7 +657,7 @@ done
 sleep 30
 
 LogMsg "Copy files to server: ${STATIC_IP2}"
-scp -i "$HOME"/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no ~/perf_iperf_panorama_server.sh ${SERVER_OS_USERNAME}@[${STATIC_IP2}]:
+scp -i "$HOME"/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no ~/perf_iperf_server.sh ${SERVER_OS_USERNAME}@[${STATIC_IP2}]:
 if [ $? -ne 0 ]; then
     msg="Error: Unable to copy test scripts to target server machine: ${STATIC_IP2}. scp command failed."
     LogMsg "${msg}"
@@ -593,7 +674,7 @@ scp -i "$HOME"/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no ~/utils.sh
 # Start iPerf in server mode on the Target server side
 #
 LogMsg "Starting iPerf in server mode on ${STATIC_IP2}"
-ssh -i "$HOME"/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no ${SERVER_OS_USERNAME}@${STATIC_IP2} "echo '~/perf_iperf_panorama_server.sh > iPerf3_Panorama_ServerSideScript.log' | at now"
+ssh -i "$HOME"/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no ${SERVER_OS_USERNAME}@${STATIC_IP2} "echo '~/perf_iperf_server.sh > iPerf3_Panorama_ServerSideScript.log' | at now"
 if [ $? -ne 0 ]; then
     msg="Error: Unable to start iPerf3 server scripts on the target server machine"
     LogMsg "${msg}"
@@ -640,6 +721,9 @@ fi
 #
 LogMsg "Starting iPerf3 in client mode"
 
+previous_tx_bytes=$(get_tx_bytes)
+previous_tx_pkts=$(get_tx_pkts)
+
 i=0
 mkdir -p ./${TEST_RUN_LOG_FOLDER}
 while [ "x${IPERF3_TEST_CONNECTION_POOL[$i]}" != "x" ]
@@ -652,7 +736,7 @@ do
     touch ${TEST_SIGNAL_FILE}
     echo ${IPERF3_TEST_CONNECTION_POOL[$i]} > ${TEST_SIGNAL_FILE}
     scp -i "$HOME"/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no ${TEST_SIGNAL_FILE} $server_username@${STATIC_IP2}:
-    sleep 7
+    sleep 15
 
     number_of_connections=${IPERF3_TEST_CONNECTION_POOL[$i]}
     bash ./perf_capturer.sh $INDIVIDUAL_TEST_DURATION ${TEST_RUN_LOG_FOLDER}/$number_of_connections &
@@ -662,26 +746,30 @@ do
 
     while [ $number_of_connections -gt $CONNECTIONS_PER_IPERF3 ]; do
         number_of_connections=$(($number_of_connections-$CONNECTIONS_PER_IPERF3))
-        echo " \"/root/${rootDir}/src/iperf3 ${IPERF3_PROTOCOL+-u} -c $IPERF3_SERVER_IP -p $port $ipVersion -P $CONNECTIONS_PER_IPERF3 -t $INDIVIDUAL_TEST_DURATION > /dev/null \" " >> the_generated_client.sh
+        echo " \"/root/${rootDir}/src/iperf3 ${IPERF3_PROTOCOL+-u} -c $IPERF3_SERVER_IP -p $port $ipVersion ${BANDWIDTH+-b ${BANDWIDTH}} -l ${IPERF3_BUFFER} -P $CONNECTIONS_PER_IPERF3 -t $INDIVIDUAL_TEST_DURATION --get-server-output -i ${INDIVIDUAL_TEST_DURATION} > /dev/null \" " >> the_generated_client.sh
         port=$(($port + 1))
     done
 
     if [ $number_of_connections -gt 0 ]
     then
-        echo " \"/root/${rootDir}/src/iperf3 ${IPERF3_PROTOCOL+-u} -c $IPERF3_SERVER_IP -p $port $ipVersion -P $number_of_connections  -t $INDIVIDUAL_TEST_DURATION > /dev/null \" " >> the_generated_client.sh
+        echo " \"/root/${rootDir}/src/iperf3 ${IPERF3_PROTOCOL+-u} -c $IPERF3_SERVER_IP -p $port $ipVersion ${BANDWIDTH+-b ${BANDWIDTH}} -l ${IPERF3_BUFFER} -P $number_of_connections  -t $INDIVIDUAL_TEST_DURATION --get-server-output -i ${INDIVIDUAL_TEST_DURATION} > /dev/null \" " >> the_generated_client.sh
     fi
 
     sed -i ':a;N;$!ba;s/\n/ /g'  ./the_generated_client.sh
     chmod 755 the_generated_client.sh
 
     cat ./the_generated_client.sh
-    ./the_generated_client.sh > /dev/null
-
-    i=$(($i + 1))
-
+    ./the_generated_client.sh > ${TEST_RUN_LOG_FOLDER}/${IPERF3_TEST_CONNECTION_POOL[$i]}-iperf3.log
+    i=$(($i + 1))   
+    
     echo "Clients test just finished. Sleep 10 seconds for next test..."
-    sleep 10
+    sleep 60
 done
+current_tx_bytes=$(get_tx_bytes)
+current_tx_pkts=$(get_tx_pkts)
+bytes_new=`(expr $current_tx_bytes - $previous_tx_bytes)`
+pkts_new=`(expr $current_tx_pkts - $previous_tx_pkts)`
+avg_pkt_size=$(echo "scale=2;$bytes_new/$pkts_new/1024" | bc)
 
 if [ -f iPerf3_Client_Logs.zip ]
 then
@@ -689,7 +777,9 @@ then
 fi
 # Test Finished. Collect logs, zip client side logs
 sleep 60
-zip -r iPerf3_Client_Logs.zip ~/${TEST_RUN_LOG_FOLDER}
+
+#zip -r iPerf3_Client_Logs.zip ~/${TEST_RUN_LOG_FOLDER}
+zip -r iPerf3_Client_Logs.zip . -i ${TEST_RUN_LOG_FOLDER}/*
 
 # Get logs from server side
 ssh -i "$HOME"/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no ${SERVER_OS_USERNAME}@${STATIC_IP2} "echo 'if [ -f iPerf3_Server_Logs.zip  ]; then rm -f iPerf3_Server_Logs.zip; fi' | at now"
@@ -700,6 +790,10 @@ scp -i "$HOME"/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no -r ${SERVE
 
 UpdateSummary "Distribution: $DISTRO"
 UpdateSummary "Kernel: $(uname -r)"
+UpdateSummary "Test Protocol: ${IPERF3_PROTOCOL}"
+UpdateSummary "Packet size: $avg_pkt_size"
+UpdateSummary "IPERF3_BUFFER: ${IPERF3_BUFFER}"
+
 
 #
 # If we made it here, everything worked

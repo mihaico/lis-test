@@ -26,7 +26,13 @@ function CheckGateway
 	# Get interfaces that have default gateway set
 	gw_interf=($(route -n | grep 'UG[ \t]' | awk '{print $8}'))
 
-	[[ ${gw_interf[*]} =~ ${1} ]]
+	for if_gw in ${gw_interf[@]}; do
+		if [[ ${if_gw} == ${1} ]]; then
+			return 0
+		fi
+	done
+
+	return 1
 }
 
 function AddGateway
@@ -83,6 +89,7 @@ function ConfigureInterfaces
 		LogMsg "Info : Configuring interface ${IFACE}"
 		UpdateSummary "Info : Configuring interface ${IFACE}"
 		AddNIC $IFACE
+		sleep 5
 		if [ $? -eq 0 ]; then
 			ip_address=$(ip addr show $IFACE | grep "inet\b" | grep -v '127.0.0.1' | awk '{print $2}' | cut -d/ -f1)
 			msg="Info : Successfully set IP address - ${ip_address}"
@@ -92,15 +99,12 @@ function ConfigureInterfaces
 			return 1
 		fi
 
-		# Set filters for RHEL/CentOS
-		if [[ "$os_VENDOR" == "Red Hat" ]] || \
-		[[ "$os_VENDOR" == "CentOS" ]]; then
-			sysctl -w net.ipv4.conf.all.rp_filter=0
-			sysctl -w net.ipv4.conf.default.rp_filter=0
-			sysctl -w net.ipv4.conf.eth0.rp_filter=0
-			sysctl -w net.ipv4.conf.$IFACE.rp_filter=0
-			sleep 2
-		fi
+		# Disable reverse protocol filters
+		sysctl -w net.ipv4.conf.all.rp_filter=0
+		sysctl -w net.ipv4.conf.default.rp_filter=0
+		sysctl -w net.ipv4.conf.eth0.rp_filter=0
+		sysctl -w net.ipv4.conf.$IFACE.rp_filter=0
+		sleep 2
 
 		# Chech for gateway
 		LogMsg "Info : Checking if default gateway is set for ${IFACE}"
@@ -147,7 +151,8 @@ function AddNIC
 		sed -i -- "s/eth0/${ifName}/g" /etc/sysconfig/network-scripts/ifcfg-${ifName}
 		sed -i -e "s/HWADDR/#HWADDR/" /etc/sysconfig/network-scripts/ifcfg-${ifName}
 		sed -i -e "s/UUID/#UUID/" /etc/sysconfig/network-scripts/ifcfg-${ifName}
-	elif [ "$os_VENDOR" == "SUSE LINUX" ]; then
+	elif [ "$os_VENDOR" == "SUSE LINUX" ] || \
+	[ "$os_VENDOR" == "SUSE" ]; then
 		LogMsg "Info : Creating ifcfg-${ifName}"
 		cp /etc/sysconfig/network/ifcfg-eth0 /etc/sysconfig/network/ifcfg-${ifName}
 		sed -i -- "s/eth0/${ifName}/g" /etc/sysconfig/network/ifcfg-${ifName}
@@ -241,35 +246,33 @@ else
 fi
 
 if [ -z "${LEGACY_NICS+x}" ]; then
-	LogMsg "Parameter SYNTHETIC_NICS was not found"
+	LogMsg "Parameter LEGACY_NICS was not found"
 else
 	let EXPECTED_INTERFACES_NO=$EXPECTED_INTERFACES_NO+$LEGACY_NICS
 fi
 
-if [ "${FOUND_PARAM}" -eq 0 ]; then
-	msg="Error : Parameter TEST_TYPE was not found"
-	LogMsg "${msg}"
-	UpdateSummary "${msg}"
-	SetTestStateAborted
-	exit 30
-fi
 GetOSVersion
 DEFAULT_GATEWAY=($(route -n | grep 'UG[ \t]' | awk '{print $2}'))
 SUCCESS_PING="8.8.8.8"
 
 IFACES=($(ifconfig -s -a | awk '{print $1}'))
-# Delete first and last elements from the list- iface, lo
+# Delete first element from the list - iface
 IFACES=("${IFACES[@]:1}")
-unset IFACES[${#IFACES[@]}-1]
 # Check for interfaces with longer names - enp0s10f
+# Delete other interfaces - lo, virbr
 let COUNTER=0
 for i in "${!IFACES[@]}"; do
-	if [ ${IFACES[$i]} == "enp0s10f" ]; then
+	if echo "${IFACES[$i]}" | grep -q "lo\|virbr"; then
+		echo "Found"
+		unset IFACES[$i]
+	fi
+	if [[ ${IFACES[$i]} == "enp0s10f" ]]; then
 		IFACES[$i]=${IFACES[$i]}${COUNTER}
 		let COUNTER=COUNTER+1
 	fi
 done
 
+UpdateSummary "Info : Array of NICs - ${IFACES}"
 #
 # Check how many interfaces are visible to the VM
 #
@@ -284,6 +287,7 @@ fi
 #
 # Bring interfaces up, using dhcp, and check connection for each one
 #
+UpdateSummary "Info : Bringing up interfaces using DHCP"
 ConfigureInterfaces
 if [ $? -ne 0 ]; then
 	SetTestStateFailed
@@ -293,9 +297,10 @@ fi
 # Check if all interfaces have a default gateway
 #
 GATEWAY_IF=($(route -n | grep 'UG[ \t]' | awk '{print $8}'))
+UpdateSummary "Info : Gateway setup for each NIC - ${GATEWAY_IF}"
 if [ ${#GATEWAY_IF[@]} -ne $EXPECTED_INTERFACES_NO ]; then
-	LogMsg "Info : Checking interfaces with missing gateway address"
 	UpdateSummary "Info : Checking interfaces with missing gateway address"
+	LogMsg "Info : Checking interfaces with missing gateway address"
 	for IFACE in ${IFACES[@]}; do
 		CheckGateway $IFACE
 		if [ $? -ne 0 ]; then
@@ -309,13 +314,13 @@ if [ ${#GATEWAY_IF[@]} -ne $EXPECTED_INTERFACES_NO ]; then
 				exit 2
 			fi
 		fi
-		
 	done
 fi
 
 #
 # Check to see if all raised interfaces work
 #
+UpdateSummary "Info : All interfaces are up - Testing connection for each of them"
 for IFACE in ${IFACES[@]}; do
 	TestConnection $SUCCESS_PING $IFACE
 	if [ $? -ne 0 ]; then

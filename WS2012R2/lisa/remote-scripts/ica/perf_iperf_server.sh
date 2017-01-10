@@ -23,7 +23,7 @@
 
 #######################################################################
 #
-# perf_iperf_panorama_server.sh
+# perf_iperf_server.sh
 #
 # Description:
 #     For the test to run you have to place the iperf3 tool package in the
@@ -528,7 +528,8 @@ while true; do
 
         for ((i=8001; i<=$number_of_iperf_instances; i++))
         do
-            /root/${rootDir}/src/iperf3 -s ${IPERF3_PROTOCOL+-u} -D $ipVersion -p $i
+            /root/${rootDir}/src/iperf3 -s $ipVersion -p $i -i ${INDIVIDUAL_TEST_DURATION} -D
+            sleep 1
         done
         x=$(ps -aux | grep iperf | wc -l)
         echo "ps -aux | grep iperf | wc -l: $x"
