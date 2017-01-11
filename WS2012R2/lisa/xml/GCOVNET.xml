@@ -56,9 +56,13 @@
                 <suiteTest>Network_Hang_Vxlan</suiteTest>
                 <suiteTest>CopyFileScp</suiteTest>
                 <suiteTest>CheckKeywithEthtool</suiteTest>
+                <suiteTest>IPInjection</suiteTest>
+                <suiteTest>MaxSyntheticNIC</suiteTest>
+                <suiteTest>MaxLegacyNIC</suiteTest>
+                <suiteTest>MaxNIC</suiteTest>
                 <!-- The following tests require a Generation 2 VM -->
-                <!--<suiteTest>HotAddMultiNIC</suiteTest>-->
-                <!--<suiteTest>HotAddRemoveNic</suiteTest>-->
+                <suiteTest>HotAddMultiNIC</suiteTest>
+                <suiteTest>HotAddRemoveNic</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -459,6 +463,89 @@
             <timeout>800</timeout>
         </test>
 
+        <test>
+            <testName>IPInjection</testName>
+            <setupScript>
+                <file>setupscripts\RevertSnapshot.ps1</file>
+            </setupScript>
+            <testParams>
+                <param>TC_COVERED=NET_LIVEMIG-09</param>
+                <param>ipv4address=192.168.126.224</param>
+                <param>ipv4subnet=255.255.255.0</param>
+                <param>ipv4Gateway=192.168.126.1</param>
+                <param>dnsserver=192.168.126.2</param>
+            </testParams>
+            <testScript>SetupScripts\NET_ipinjection.ps1</testScript>
+            <files>remote-scripts/ica/utils.sh</files>
+            <timeout>600</timeout>
+        </test>
+
+        <test>
+            <testName>MaxSyntheticNIC</testName>
+            <onError>Abort</onError>
+            <setupScript>
+                <file>setupscripts\RevertSnapshot.ps1</file>
+                <file>setupscripts\NET_ADD_MAX_NIC.ps1</file>
+            </setupScript>
+            <testParams>
+                <param>TC_COVERED=NET-20</param>
+                <param>TEST_TYPE=synthetic</param>
+                <param>SYNTHETIC_NICS=7</param>
+                <param>NETWORK_TYPE=external</param>
+            </testParams>
+            <testScript>setupscripts\NET_MAX_NIC.ps1</testScript>
+            <files>remote-scripts/ica/NET_MAX_NIC.sh,remote-scripts/ica/utils.sh,
+                remote-scripts/ica/collect_gcov_data.sh</files>
+            <uploadFiles>
+            <file>gcov_data.zip</file>
+            </uploadFiles>
+            <timeout>800</timeout>
+        </test>
+
+        <test>
+            <testName>MaxLegacyNIC</testName>
+            <onError>Abort</onError>
+            <setupScript>
+                <file>setupscripts\RevertSnapshot.ps1</file>
+                <file>setupscripts\NET_ADD_MAX_NIC.ps1</file>
+            </setupScript>
+            <testParams>
+                <param>TC_COVERED=NET-21</param>
+                <param>TEST_TYPE=legacy</param>
+                <param>LEGACY_NICS=4</param>
+                <param>NETWORK_TYPE=external</param>
+            </testParams>
+            <testScript>setupscripts\NET_MAX_NIC.ps1</testScript>
+            <files>remote-scripts/ica/NET_MAX_NIC.sh,remote-scripts/ica/utils.sh,
+                remote-scripts/ica/collect_gcov_data.sh</files>
+            <uploadFiles>
+            <file>gcov_data.zip</file>
+            </uploadFiles>
+            <timeout>800</timeout>
+        </test>
+
+        <test>
+            <testName>MaxNIC</testName>
+            <onError>Abort</onError>
+            <setupScript>
+                <file>setupscripts\RevertSnapshot.ps1</file>
+                <file>setupscripts\NET_ADD_MAX_NIC.ps1</file>
+            </setupScript>
+            <testParams>
+                <param>TC_COVERED=NET-22</param>
+                <param>TEST_TYPE=synthetic,legacy</param>
+                <param>SYNTHETIC_NICS=7</param>
+                <param>LEGACY_NICS=4</param>
+                <param>NETWORK_TYPE=external</param>
+            </testParams>
+            <testScript>setupscripts\NET_MAX_NIC.ps1</testScript>
+            <files>remote-scripts/ica/NET_MAX_NIC.sh,remote-scripts/ica/utils.sh,
+                remote-scripts/ica/collect_gcov_data.sh</files>
+            <uploadFiles>
+            <file>gcov_data.zip</file>
+            </uploadFiles>
+            <timeout>800</timeout>
+        </test>
         <!-- The following test requires a Gen 2 VM -->
         <test>
             <testName>HotAddMultiNIC</testName>
