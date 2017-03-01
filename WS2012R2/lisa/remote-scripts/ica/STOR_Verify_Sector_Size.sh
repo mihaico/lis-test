@@ -29,7 +29,7 @@
 #     step
 #    1. Fdisk with {n,p,w}, fdisk -lu (by default display sections units )
 #    2. Verify the first sector of the disk can divide 8
-#    3. Verify the logial sector and physical size
+#    3. Verify the logical sector and physical size
 #    Note: for logical size is 4096, already 4k align, no need to test.
 #
 ########################################################################
@@ -79,13 +79,6 @@ if [ -e ~/summary.log ]; then
     rm -rf ~/summary.log
 fi
 
-# Make sure the constants.sh file exists
-if [ ! -e ./constants.sh ]; then
-    LogMsg "Cannot find constants.sh file."
-    UpdateTestState $ICA_TESTABORTED
-    exit 1
-fi
-
 # Source the constants file
 if [ -e $HOME/constants.sh ]; then
     . $HOME/constants.sh
@@ -94,8 +87,16 @@ else
     exit 1
 fi
 
-# add new disk partition with "n" and showing the sectors units format
-(echo n; echo p; echo 1; echo ; echo ; echo w) |  fdisk $driveName
+#Check if parted is installed. If yes, create partition.
+parted --help > /dev/null 2>&1
+if [ $? -eq 0 ] ; then
+    parted $driveName mklabel msdos
+    parted $driveName mkpart primary 0% 100% 
+else
+    UpdateSummary "ERROR: Parted was not found."
+    UpdateTestState "TestAborted"
+    exit 1
+fi
 
 startSector=`fdisk -lu $driveName | tail -1 | awk '{print $2}'`
 logicalSectorSize=`fdisk -lu $driveName | grep -i 'Sector size' | grep -oP '\d+' | head -1`
@@ -111,7 +112,10 @@ else
   exit 1
 fi
 
-#check logical sector size is 512 and physical sector is 4096, 4k alignment only needs to test in 512 sector
+#
+# check logical sector size is 512 and physical sector is 4096
+# 4k alignment only needs to test in 512 sector
+#
 if [[ $logicalSectorSize = 512 && $PhysicalSectorSize = 4096 ]]; then
 
    echo "Check logical and physical sector size on disk $driveName : Success"

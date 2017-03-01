@@ -223,7 +223,6 @@ function CreateController([string] $vmName, [string] $server, [string] $controll
     }
 }
 
-
 function ConvertStringToUInt64([string] $newSize)
 {
     $uint64Size = $null
@@ -235,7 +234,6 @@ function ConvertStringToUInt64([string] $newSize)
         Write-Error -Message "ConvertStringToUInt64() - input string is null" -Category InvalidArgument -ErrorAction SilentlyContinue
         return $null
     }
-
 
     if ($newSize.EndsWith("MB"))
     {
@@ -486,11 +484,17 @@ function CreateHardDrive( [string] $vmName, [string] $server, [System.Boolean] $
                 }
             "Physical"
                 {
-                    Write-Output "Searching physical drive..."
-                    $findVhd = Get-Disk | Where-Object OperationalStatus -eq Offline
-                    $newVhd = $findVhd.Number
+                    Write-Output "Searching for physical drive..."
+                    $newVhd = (Get-Disk | Where-Object {($_.OperationalStatus -eq "Offline") -and ($_.Number -eq "$PhyNumber")}).Number
                     Write-Output "Physical drive found: $newVhd"
                 }
+            "RAID"
+                {
+                    Write-Host "Searching for RAID disks..."
+                    $newVhd = (Get-Disk | Where-Object {($_.OperationalStatus -eq "Offline" -and $_.Number -gt "$PhyNumber")}).Number
+                    Write-Output "Physical drive found: $newVhd"
+                    sleep 5
+                }   
             "Diff"
                 {
                     $parentVhdName = $defaultVhdPath + "icaDiffParent.vhd"
@@ -522,7 +526,22 @@ function CreateHardDrive( [string] $vmName, [string] $server, [System.Boolean] $
     #
     # Attach the .vhd file to the new drive
     #
-    if ($vhdType -eq "Physical")
+    if ($vhdType -eq "RAID")
+    {
+        Write-Output "Attaching physical drive for RAID..."
+        $ERROR.Clear()
+        foreach ($i in $newvhd)
+        {
+            $disk = Add-VMHardDiskDrive -VMName $vmName -ComputerName $server -ControllerType $controllerType -ControllerNumber $controllerID -DiskNumber $i
+            if ($ERROR.Count -gt 0)
+            {
+                "ERROR: Unable to attach physical drive: $i."
+                $ERROR[0].Exception
+                return $false
+            }
+        }
+    }
+    elseif ($vhdType -eq "Physical")
     {
         Write-Output "Attaching physical drive..."
         $ERROR.Clear()
@@ -552,8 +571,6 @@ function CreateHardDrive( [string] $vmName, [string] $server, [System.Boolean] $
 
     return $retVal
 }
-
-
 
 ############################################################################
 #
@@ -607,6 +624,12 @@ foreach ($p in $params)
         continue
     }
 
+    if ($temp[0] -eq "PHYSICAL_NUMBER")
+    {
+        $PhyNumber = $temp[1]
+        continue
+    }
+
     $controllerType = $temp[0]
     if (@("IDE", "SCSI") -notcontains $controllerType)
     {
@@ -639,7 +662,7 @@ foreach ($p in $params)
         $VHDSize = $diskArgs[3].Trim()
     }
 
-    if (@("Fixed", "Dynamic", "PassThrough", "Diff", "Physical") -notcontains $vhdType)
+    if (@("Fixed", "Dynamic", "PassThrough", "Diff", "Physical", "RAID") -notcontains $vhdType)
     {
         "Error: Unknown disk type: $p"
         $retVal = $false

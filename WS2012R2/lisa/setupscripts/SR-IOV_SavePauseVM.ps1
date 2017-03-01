@@ -153,12 +153,16 @@ foreach ($p in $params)
         "BOND_IP2" { $vmBondIP2 = $fields[1].Trim() }
         "BOND_IP3" { $vmBondIP3 = $fields[1].Trim() }
         "BOND_IP4" { $vmBondIP4 = $fields[1].Trim() }
-        "NETMASK" { $netmask = $fields[1].Trim() }
+        "NETMASK"  { $netmask = $fields[1].Trim() }
         "REMOTE_USER" { $remoteUser = $fields[1].Trim() }
-        "VM2NAME" { $vm2Name = $fields[1].Trim() }
+        "VM2NAME"  { $vm2Name = $fields[1].Trim() }
         "VM_STATE" { $vmState = $fields[1].Trim()}
+        "TC_COVERED" { $TC_COVERED = $fields[1].Trim() }
     }
 }
+$summaryLog = "${vmName}_summary.log"
+del $summaryLog -ErrorAction SilentlyContinue
+Write-Output "This script covers test case: ${TC_COVERED}" | Tee-Object -Append -file $summaryLog
 
 #
 # Configure the bond on test VM
@@ -166,9 +170,28 @@ foreach ($p in $params)
 $retVal = ConfigureBond $ipv4 $sshKey $netmask
 if (-not $retVal)
 {
-    "ERROR: Failed to configure bond on vm $vmName (IP: ${ipv4}), by setting a static IP of $vmBondIP1 , netmask $netmask"
+    "ERROR: Failed to configure bond on vm $vmName (IP: ${ipv4}), by setting a static IP of $vmBondIP1 , netmask $netmask" | Tee-Object -Append -file $summaryLog
     return $false
 }
+
+#
+# Run Ping with SR-IOV enabled
+#
+.\bin\plink.exe -i ssh\$sshKey root@${ipv4} "echo 'source constants.sh && ping -c 20 -I bond0 `$BOND_IP2 > PingResults.log &' > runPing.sh"
+Start-Sleep -s 5
+.\bin\plink.exe -i ssh\$sshKey root@${ipv4} "bash ~/runPing.sh > ~/Ping.log 2>&1"
+
+# Wait 60 seconds and read the RTT
+"Get Logs"
+Start-Sleep -s 10
+[decimal]$beforeRTT = .\bin\plink.exe -i ssh\$sshKey root@${ipv4} "tail -2 PingResults.log | head -1 | awk '{print `$7}' | sed 's/=/ /' | awk '{print `$2}'"
+if (-not $beforeRTT){
+    "ERROR: No result was logged! Check if Ping was executed!" | Tee-Object -Append -file $summaryLog
+    return $false
+}
+
+"The RTT before saving/pausing VM is $beforeRTT ms" | Tee-Object -Append -file $summaryLog
+Start-Sleep -s 10
 
 #
 # Create an 1 GB file on test VM
@@ -177,7 +200,7 @@ Start-Sleep -s 3
 $retVal = CreateFileOnVM $ipv4 $sshKey 1024
 if (-not $retVal)
 {
-    "ERROR: Failed to create a file on vm $vmName (IP: ${ipv4}), by setting a static IP of $vmBondIP1 , netmask $netmask"
+    "ERROR: Failed to create a file on vm $vmName (IP: ${ipv4}), by setting a static IP of $vmBondIP1 , netmask $netmask" | Tee-Object -Append -file $summaryLog
     return $false
 }
 
@@ -188,7 +211,7 @@ Start-Sleep -s 3
 $retVal = SRIOV_SendFile $ipv4 $sshKey 7000
 if (-not $retVal)
 {
-    "ERROR: Failed to send the file from vm $vmName to $vm2Name"
+    "ERROR: Failed to send the file from vm $vmName to $vm2Name" | Tee-Object -Append -file $summaryLog
     return $false
 }
 
@@ -201,7 +224,7 @@ if ( $vmState -eq "pause" )
     Suspend-VM -Name $vmName -ComputerName $hvServer -Confirm:$False
     if ($? -ne "True")
     {
-        "ERROR: VM $vmName failed to enter paused state"
+        "ERROR: VM $vmName failed to enter paused state" | Tee-Object -Append -file $summaryLog
         return $false
     }
 
@@ -210,7 +233,7 @@ if ( $vmState -eq "pause" )
     Resume-VM -Name $vmName -ComputerName $hvServer -Confirm:$False
     if ($? -ne "True")
     {
-        "ERROR: VM $vmName failed to resume"
+        "ERROR: VM $vmName failed to resume" | Tee-Object -Append -file $summaryLog
         return $false
     }
 }
@@ -220,7 +243,7 @@ elseif ( $vmState -eq "save" )
     Save-VM -Name $vmName -ComputerName $hvServer -Confirm:$False
     if ($? -ne "True")
     {
-        "ERROR: VM $vmName failed to enter saved state"
+        "ERROR: VM $vmName failed to enter saved state" | Tee-Object -Append -file $summaryLog
         return $false
     }
 
@@ -229,25 +252,30 @@ elseif ( $vmState -eq "save" )
     Start-VM -Name $vmName -ComputerName $hvServer -Confirm:$False
     if ($? -ne "True")
     {
-      "ERROR: VM $vmName failed to restart"
+      "ERROR: VM $vmName failed to restart" | Tee-Object -Append -file $summaryLog
       return $false
     }    
 }
 
 else {
-    "ERROR: Check the parameters! It should have VM_STATE=pause or VM_STATE=save"
+    "ERROR: Check the parameters! It should have VM_STATE=pause or VM_STATE=save" | Tee-Object -Append -file $summaryLog
     return $false    
 }
 
-#
-# Restart network on test VM
-#
-Start-Sleep -s 30
-$retVal = RestartVF $ipv4 $sshKey
-if (-not $retVal)
-{
-    "ERROR: Failed to restart VF on $vmName"
-    return $false
+# Read the RTT again, it should be lower than before
+# We should see a significant imporvement, we'll check for at least 0.1 ms improvement
+Start-Sleep -s 10
+.\bin\plink.exe -i ssh\$sshKey root@${ipv4} "bash ~/runPing.sh > ~/Ping.log 2>&1"
+Start-Sleep -s 5
+
+[decimal]$beforeRTT = $beforeRTT + 0.04
+[decimal]$afterRTT = .\bin\plink.exe -i ssh\$sshKey root@${ipv4} "tail -2 PingResults.log | head -1 | awk '{print `$7}' | sed 's/=/ /' | awk '{print `$2}'"
+
+"The RTT after re-enabling SR-IOV is $afterRTT ms" | Tee-Object -Append -file $summaryLog
+if ($afterRTT -ge $beforeRTT ) {
+    "ERROR: After resuming VM, the RTT value has not lowered enough
+    Please check if the VF was successfully restarted" | Tee-Object -Append -file $summaryLog
+    return $false 
 }
 
 #
@@ -257,8 +285,10 @@ Start-Sleep -s 20
 $retVal = SRIOV_SendFile $ipv4 $sshKey 14000
 if (-not $retVal)
 {
-    "ERROR: Failed to send the file from vm $vmName to $vm2Name after changing state"
+    "ERROR: Failed to send the file from vm $vmName to $vm2Name after changing state" | Tee-Object -Append -file $summaryLog
     return $false
 }
 
-return $retVal
+Start-Sleep -s 10
+ "File was successfully sent from VM1 to VM2 after resuming VM" | Tee-Object -Append -file $summaryLog
+return $true

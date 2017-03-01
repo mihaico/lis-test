@@ -86,7 +86,7 @@
     to indicate if the script completed successfully or not.
 
    .Parameter vmName
-    Name of the first VM implicated in vlan trunking test .
+    Name of the first VM part of the test.
 
     .Parameter hvServer
     Name of the Hyper-V server hosting the VM.
@@ -95,7 +95,7 @@
     Test data for this test case
 
     .Example
-    NET_VLAN_TAGGING -vmName sles11sp3x64 -hvServer localhost -testParams "NIC=NetworkAdapter,Private,Private,001600112200;VLAN_ID=2;VM2NAME=second_sles11sp3x64"
+    NET_VLAN_TAGGING -vmName VM -hvServer localhost -testParams "NIC=NetworkAdapter,Private,Private,001600112200;VLAN_ID=2;VM2NAME=second_VM"
 #>
 
 param([string] $vmName, [string] $hvServer, [string] $testParams)
@@ -418,6 +418,7 @@ foreach ($p in $params)
 
     switch ($fields[0].Trim())
     {
+	"TC_COVERED" { $TC_COVERED = $fields[1].Trim() }
     "VM2NAME" { $vm2Name = $fields[1].Trim() }
     "SshKey"  { $sshKey  = $fields[1].Trim() }
     "ipv4"    { $ipv4    = $fields[1].Trim() }
@@ -871,7 +872,7 @@ if ( $TestIPV6 -eq "yes" )
     }
 }
 
-"Failed to ping (as expected)"
+"Info: Could not ping (as expected)"
 # Collect gcov
 RunRemoteScript "collect_gcov_data.sh"
 
@@ -891,6 +892,7 @@ if ($sts)
                 {
                     move "${remoteFile}" "${localFile}"
 }}}}
+"Info: Could not ping (as expected)"
 
 "Stopping $vm2Name"
 Stop-VM -Name $vm2Name -ComputerName $hvServer -force
@@ -901,5 +903,4 @@ if (-not $?)
 }
 
 "Test successful!"
-
 return $true

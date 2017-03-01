@@ -136,21 +136,27 @@ VerifyVF()
 	# Using lsmod command, verify if driver is loaded
 	lsmod | grep ixgbevf
 	if [ $? -ne 0 ]; then
-	    msg="ERROR: ixgbevf driver not loaded!"
-	    LogMsg "$msg"
-	    UpdateSummary "$msg"
-	    SetTestStateFailed
-	    return 1
+	    lsmod | grep mlx4_core
+	    if [ $? -ne 0 ]; then
+	  		msg="ERROR: Neither mlx4_core or ixgbevf drivers are in use!"
+	  		LogMsg "$msg"
+		    UpdateSummary "$msg"
+		    SetTestStateFailed
+		    return 1
+		fi
 	fi
 
 	# Using the lspci command, verify if NIC has SR-IOV support
 	lspci -vvv | grep ixgbevf
 	if [ $? -ne 0 ]; then
-	    msg="ERROR: No NIC with SR-IOV support found!"
-	    LogMsg "$msg"                                                             
-	    UpdateSummary "$msg"
-	    SetTestStateFailed
-	    return 1
+		lspci -vvv | grep mlx4_core
+		if [ $? -ne 0 ]; then
+		    msg="No NIC with SR-IOV support found!"
+		    LogMsg "$msg"                                                             
+		    UpdateSummary "$msg"
+		    SetTestStateFailed
+		    return 1
+		fi
 	fi
 
 	return 0
@@ -214,8 +220,14 @@ Check_SRIOV_Parameters()
 #
 Create1Gfile()
 {
-	# Create file locally with PID appended
 	output_file=large_file
+	
+	if [ "${ZERO_FILE:-UNDEFINED}" = "UNDEFINED" ]; then
+	    file_source=/dev/urandom
+	else
+	    file_source=/dev/zero
+	fi
+
 	if [ -d "$HOME"/"$output_file" ]; then
 	    rm -rf "$HOME"/"$output_file"
 	fi
