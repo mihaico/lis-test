@@ -212,6 +212,17 @@ fi
 UpdateSummary "Starting to listen on port 1234"
 echo "nc -v -w 30 -l $port < $filePath &" > $3
 chmod +x $3
+
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 LogMsg "Setup completed"
 UpdateSummary "Setup completed"
 exit 0

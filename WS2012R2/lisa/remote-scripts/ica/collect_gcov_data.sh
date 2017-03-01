@@ -36,9 +36,9 @@ declare -a lib_files=( 'hyperv.h' 'mshyperv.h' 'sync_bitops.h'
                        'hidraw.h' 'hv_compat.h' 'rndis.h' 'hid-uuid.h'
                        'hid.h' )
 
-SOURCE_LOC="/home/test/linux-4.9.2/"
-DRIVER_GCOV_LOC="/sys/kernel/debug/gcov/home/test/linux-4.9.2/"
-DAEMON_GCOV_LOC="/home/test/linux-4.9.2/tools/hv/"
+SOURCE_LOC="/home/test/linux-4.10.1/"
+DRIVER_GCOV_LOC="/sys/kernel/debug/gcov/home/test/linux-4.10.1/"
+DAEMON_GCOV_LOC="/home/test/linux-4.10.1/tools/hv/"
 
 declare -a daemons=( 'hv_kvp_daemon' 'hv_vss_daemon' 'hv_fcopy_daemon' )
 declare -a daemons_loc=( 'tools/hv/hv_kvp_daemon.c'
