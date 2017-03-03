@@ -113,8 +113,11 @@ foreach ($p in $params) {
 	if ($fields[0].Trim() -eq "sshkey") {
         $sshkey = $fields[1].Trim()
     }
-	if ($fields[0].Trim() -eq "TestLogDir") {
+    if ($fields[0].Trim() -eq "TestLogDir") {
         $TestLogDir = $fields[1].Trim()
+    }
+    if ($fields[0].Trim() -eq "TestName") {
+        $TestName = $fields[1].Trim()
     }
 }
 
@@ -177,5 +180,26 @@ if (-not $sts[-1]) {
 else {
 	Write-Output "Matching values for WWNN ${WorldWideNodeNameSet} and WWNP ${WorldWidePortNameSet} have been found! " | Tee-Object -Append -file $summaryLog
 }
+
+#
+# Collect the log file from the client
+#
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
+"Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 return $retVal

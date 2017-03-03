@@ -280,6 +280,16 @@ dd if=/dev/zero of=/mnt/Example/data bs=10M count=50
 LogMsg "FC stress test completed successfully"
 echo "FC stress test completed successfully" >> ~/summary.log
 
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 #
 # Let ICA know we completed successfully
 #

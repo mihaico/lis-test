@@ -219,6 +219,7 @@ $maxTimeDiff = "5"
 $rootDir = $null
 $tcCovered = "unknown"
 $testDelay = "0"
+$TestLogDir = $null
 
 $params = $testParams.Split(";")
 foreach($p in $params)
@@ -238,6 +239,8 @@ foreach($p in $params)
     "rootdir"     { $rootDir     = $val }
     "MaxTimeDiff" { $maxTimeDiff = $val }
     "TC_COVERED"  { $tcCovered   = $val }
+    "TestLogDir"  { $TestLogDir  = $val }
+    "TestName"   { $TestName     = $val }
     "TestDelay"   { $testDelay   = $val }
     default       { continue }
     }
@@ -360,5 +363,26 @@ if ($diffInSeconds -and $diffInSeconds -lt $maxTimeDiff)
 }
 
 $msg
+
+#
+# Collect the log file from the client
+#
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
+"Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 return $retVal

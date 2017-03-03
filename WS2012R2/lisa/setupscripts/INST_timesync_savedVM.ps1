@@ -198,6 +198,8 @@ foreach($p in $params)
     "sshkey"  { $sshKey = $val }
     "ipv4"    { $ipv4 = $val }
     "rootdir" { $rootDir = $val }
+    "TestLogDir"  { $TestLogDir  = $val }
+    "TestName"   { $TestName     = $val }
     default  { continue }
     }
 }
@@ -278,4 +280,26 @@ if ($diffInSeconds -and $diffInSeconds -lt 5)
 }
 
 Write-Output $msg | Out-File $summaryLog
+
+#
+# Collect the log file from the client
+#
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
+"Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
+
 return $retVal

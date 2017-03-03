@@ -100,6 +100,17 @@ if [ $poolcount -ne 5 ]; then
 	UpdateTestState $ICA_TESTFAILED
 	exit 10
 fi
+
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 LogMsg "Verified that the 0-4 all the 5 data pools are listed properly"  
 echo "KVP Daemon is running and data pools are listed -KVP Basic test : Passed" >>  ~/summary.log
 LogMsg "Updating test case state to completed"

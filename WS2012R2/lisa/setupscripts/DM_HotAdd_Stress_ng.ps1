@@ -264,6 +264,8 @@ foreach ($p in $params)
       "vmName"  { $vm1Name =$fields[1].Trim() }
       "ipv4"    { $ipv4    = $fields[1].Trim() }
       "sshKey"  { $sshKey  = $fields[1].Trim() }
+      "TestLogDir"  { $TestLogDir  = $fields[1].Trim() }
+      "TestName"   { $TestName     = $fields[1].Trim() }
       "tries"  { $tries  = $fields[1].Trim() }
     }
 
@@ -443,6 +445,27 @@ if ($vm1AfterDemand -ge $vm1Demand)
   "Error: Demand did not go down after stress-ng finished."
   return $false
 }
+
+#
+# Collect the log file from the client
+#
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
+"Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 "Memory Hot Add (using stress-ng) completed successfully!"
 return $true

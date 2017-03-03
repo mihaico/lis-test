@@ -109,5 +109,15 @@ if [ "$vmbus_string" = "" ]; then
 		echo -e "Test passed! Found a matching VMBus string:\n${vmbus_string}" >> ~/summary.log
 fi
 
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 LogMsg "Test Passed"
 UpdateTestState "TestCompleted"

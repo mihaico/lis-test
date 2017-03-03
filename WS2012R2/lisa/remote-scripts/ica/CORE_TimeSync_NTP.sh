@@ -283,6 +283,16 @@ while [ $isOver == false ]; do
     sleep 1
 done
 
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 # If we reached this point, time is synced.
 LogMsg "Test passed. NTP offset is $delay seconds."
 

@@ -131,6 +131,8 @@ foreach ($p in $params)
     "sshKey"     { $sshKey      = $fields[1].Trim() }
     "rootdir"    { $rootDir   = $fields[1].Trim() }
     "TC_COVERED" { $tcCovered = $fields[1].Trim() }
+    "TestLogDir"  { $TestLogDir  = $fields[1].Trim() }
+    "TestName"   { $TestName     = $fields[1].Trim() }
     "MaxTimeDiff" { $maxTimeDiff = $fields[1].Trim() }
     default  {}
     }
@@ -312,6 +314,27 @@ if ($diffInSeconds -and $diffInSeconds -lt $maxTimeDiff)
 }
 
 $msg
+
+#
+# Collect the log file from the client
+#
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
+"Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
 
 #
 # If we reached here, everything worked fine
