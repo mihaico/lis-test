@@ -29,7 +29,7 @@
     look similar to the following:
             <test>
             <testName>Multi_Cpu_Test</testName>
-            <testScript>setupscripts\ChangeCPUIterated.ps1</testScript>  
+            <testScript>setupscripts\ChangeCPUIterated.ps1</testScript>
             <timeout>800</timeout>
             <noReboot>False</noReboot>
             <testParams>
@@ -92,7 +92,7 @@ foreach ($p in $params)
     "ipv4"       { $ipv4      = $fields[1].Trim() }
     "rootdir"    { $rootDir   = $fields[1].Trim() }
     "TC_COVERED" { $TC_COVERED = $fields[1].Trim() }
-    default   {}          
+    default   {}
     }
 }
 
@@ -143,25 +143,37 @@ Write-Output "This script covers test case: ${TC_COVERED}" | Tee-Object -Append 
 # Main script block
 #
 #######################################################################
-$OSInfo = get-wmiobject -computername $hvServer win32_processor
+
+$OSInfo = Get-WmiObject -class Win32_OperatingSystem -ComputerName $hvServer
 if ($OSInfo)
 {
-    if ($OSInfo.Caption -match '.2008 R2.'){
+    if ($OSInfo.Caption -match '.2008 R2.') {
         $guest_max_cpus = 4
-    }else{
-        $guest_max_cpus = 64
-        if($OSInfo.Caption -match '.2016.'){
+    }
+    else {
+        # Check VM OS architecture and set max CPU allowed
+        $linuxArch = .\bin\plink -i ssh\${sshKey} root@${ipv4} "uname -m"
+        if ($linuxArch -eq "i686") {
+            $guest_max_cpus = 32
+        }
+        if ($linuxArch -eq "x86_64") {
+            $guest_max_cpus = 64
+        }
+
+        if ($OSInfo.Caption -match '.2016.') {
             $generation = (Get-VM -Name $vmName -ComputerName $hvServer).Generation
-            if($generation -eq 2){
+            if($generation -eq 2) {
                 $guest_max_cpus = 240
             }
         }
     }
+
     #
-    # Get the total number of Logical processor 
+    # Get the total number of Logical processor
     #
-    $maxCPUs =  ($OSInfo.NumberOfLogicalProcessors | Measure-Object -sum).sum
-    if($maxCPUs -gt $guest_max_cpus){
+    $procInfo= get-wmiobject -computername $hvServer win32_processor
+    $maxCPUs =  ($procInfo.NumberOfLogicalProcessors | Measure-Object -sum).sum
+    if($maxCPUs -gt $guest_max_cpus) {
         $maxCPUs = $guest_max_cpus
     }
 }
@@ -172,7 +184,7 @@ if ($OSInfo)
 Stop-VM -Name $vmName -ComputerName $hvServer
 if (-not $?)
 {
-    "Error: Unable to Shut Down VM!" 
+    "Error: Unable to Shut Down VM!"
     return $False
 }
 
@@ -186,12 +198,12 @@ if (-not $sts)
 #
 # Now iterate through different CPU counts and assign to VM
 #
-for ($numCPUs = $maxCPUs ;$numCPUs -gt 1 ;[int]$numCPUs = $numCPUs /2 ) 
+for ($numCPUs = $maxCPUs ;$numCPUs -gt 1 ;[int]$numCPUs = $numCPUs /2 )
 {
     if ($numCPUs -gt 1 -and $numCPUs -lt 2) {
         $numCPUs = 1;
     }
-    
+
     $cpu = Set-VM -Name $vmName -ComputerName $hvServer -ProcessorCount $numCPUs
     if ($? -eq "True")
     {
@@ -201,25 +213,15 @@ for ($numCPUs = $maxCPUs ;$numCPUs -gt 1 ;[int]$numCPUs = $numCPUs /2 )
     {
         "Error: Unable to update CPU count to $numCPUs !"
         return $False
-    }   
-  
-    Start-VM -Name $vmName -ComputerName $hvServer 
-	while ($timeout -gt 0)
-	{
-		if ( (TestPort $ipv4) )
-		{
-			break
-		}
+    }
 
-		Start-Sleep -seconds 2
-		$timeout -= 2
-	}
-
-	if ($timeout -eq 0)
-	{
-		"Error: Test case timed out for VM to be running again!"
-		return $False
-	}
+    Start-VM -Name $vmName -ComputerName $hvServer
+    #wait for ssh to start
+    if (-not (WaitForVMToStartSSH $ipv4 $timeout))
+    {
+        "Error: Test case timed out for VM to be running again!"
+        return $False
+    }
 
     "Info: VM $vmName started with $numCPUs cores"
     $Vcpu = .\bin\plink -i ssh\${sshKey} root@${ipv4} "cat /proc/cpuinfo | grep processor | wc -l"
@@ -231,7 +233,7 @@ for ($numCPUs = $maxCPUs ;$numCPUs -gt 1 ;[int]$numCPUs = $numCPUs /2 )
         Stop-VM -Name $vmName -ComputerName $hvServer
         if (-not $?)
         {
-            "Error: Unable to Shut Down VM!" 
+            "Error: Unable to Shut Down VM!"
             return $False
         }
 

@@ -22,6 +22,7 @@ permissions and limitations under the License.
 import os
 import time
 import logging
+import constants
 
 from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.resource import ResourceManagementClient
@@ -41,7 +42,8 @@ class AzureConnector:
     Azure connector that uses azure-sdk-for-python plugin.
     """
     def __init__(self, clientid=None, secret=None, subscriptionid=None, tenantid=None,
-                 imageid=None, instancetype=None, user=None, localpath=None, location=None):
+                 imageid=None, instancetype=None, user=None, localpath=None, location=None,
+                 sriov=None):
         """
         Init Azure connector to create and configure instance VMs.
         :param clientid: client id obtained from Azure AD application (create key)
@@ -57,6 +59,7 @@ class AzureConnector:
         :param localpath: localpath where the logs should be downloaded, and the
                             default path for other necessary tools
         :param location: Azure global location to connect to
+        :param sriov: Enable/disable Accelerated Networking option
         """
         credentials = ServicePrincipalCredentials(client_id=clientid, secret=secret,
                                                   tenant=tenantid)
@@ -68,6 +71,7 @@ class AzureConnector:
 
         self.instancetype = instancetype
         self.localpath = localpath
+        self.sriov = sriov
         self.host_key_file = os.path.join(self.localpath, 'known_hosts')
         if not location:
             self.location = 'westus'
@@ -83,14 +87,15 @@ class AzureConnector:
 
         self.user = user
         self.dns_suffix = '.{}.cloudapp.azure.com'.format(self.location)
+        tag = str(time.time()).replace('.', '')
         self.key_name = 'test_ssh_key'
-        self.group_name = 'middleware_bench'
-        self.vmnet_name = 'middleware_bench_vmnet'
-        self.subnet_name = 'middleware_bench_subnet'
-        self.os_disk_name = 'middleware_bench_osdisk'
-        self.storage_account = 'benchstor' + str(time.time()).replace('.', '')
-        self.ip_config_name = 'middleware_bench_ipconfig'
-        self.nic_name = 'middleware_bench_nic'
+        self.group_name = 'middleware_bench' + tag
+        self.vmnet_name = 'middleware_bench_vmnet' + tag
+        self.subnet_name = 'middleware_bench_subnet' + tag
+        self.os_disk_name = 'middleware_bench_osdisk' + tag
+        self.storage_account = 'benchstor' + tag
+        self.ip_config_name = 'middleware_bench_ipconfig' + tag
+        self.nic_name = 'middleware_bench_nic' + tag
 
         self.subnet = None
         self.vms = []
@@ -134,7 +139,6 @@ class AzureConnector:
         log.info('Creating VM: {}'.format(self.imageid))
         vm_name = self.imageid['offer'].lower() + str(time.time()).replace('.', '')
         nic = self.create_nic(vm_name)
-        print(nic.__dict__)
         with open(os.path.join(self.localpath, self.key_name + '.pub'), 'r') as f:
             key_data = f.read()
         vm_parameters = {
@@ -192,16 +196,18 @@ class AzureConnector:
                  'dns_settings': {
                      'domain_name_label': vm_name}})
         public_ip = create_public_ip.result()
-        print(public_ip.__dict__)
 
+        nic_parameters = {'location': self.location,
+                          'ip_configurations': [{'name': self.ip_config_name,
+                                                 'subnet': {'id': self.subnet.id},
+                                                 'public_ip_address': {'id': public_ip.id}}]
+                          }
+        if self.sriov == constants.ENABLED:
+                log.info('Adding Accelerated Networking')
+                nic_parameters['enable_accelerated_networking'] = True
         nic_op = self.network_client.network_interfaces.create_or_update(
-                self.group_name, self.nic_name + str(time.time()),
-                {'location': self.location,
-                 'ip_configurations': [{'name': self.ip_config_name,
-                                        'subnet': {'id': self.subnet.id},
-                                        'public_ip_address': {'id': public_ip.id}
-                                        }]
-                 })
+                self.group_name, self.nic_name + str(time.time()), nic_parameters)
+        log.info(nic_op.result())
         return nic_op.result()
 
     def attach_disk(self, vm_instance, disk_size, lun=0):
@@ -215,6 +221,7 @@ class AzureConnector:
         disk_name = vm_instance.name + '_disk_' + str(time.time())
         disk_profile = {'name': disk_name,
                         'disk_size_gb': disk_size,
+                        'caching': 'None',
                         'lun': lun,
                         'vhd': {'uri': "http://{}.blob.core.windows.net/vhds/{}.vhd".format(
                                 self.storage_account, disk_name)},
@@ -226,11 +233,24 @@ class AzureConnector:
                                                                           vm_instance)
         vm_update.wait()
         try:
-            print('disk obj')
-            print(vm_update.result())
+            log.info(vm_update.result())
         except Exception as de:
             log.info(de)
         return disk_name
+
+    def restart_vm(self, vm_name):
+        """
+        Restart instances VM.
+        """
+        vm_instance = self.compute_client.virtual_machines.get(self.group_name, vm_name)
+
+        log.info('Restarting VM: {}'.format(vm_name))
+        vm_restart = self.compute_client.virtual_machines.restart(self.group_name, vm_name)
+        vm_restart.wait()
+        time.sleep(30)
+        log.info('Restarted VM: {}'.format(vm_instance.__dict__))
+
+        return vm_instance
 
     def teardown(self):
         """

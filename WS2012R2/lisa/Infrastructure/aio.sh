@@ -310,6 +310,9 @@ function configure_ssh(){
     else
         echo "Error: Uncomment #PasswordAuthentication failed." >> summary.log
     fi
+
+    echo "Allow root login..."
+    sed -i -e 's/PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh/sshd_config
 }
 
 ########################################################################
@@ -512,8 +515,8 @@ if is_fedora ; then
     fi
 
     echo "Installing packages..." >> summary.log
-    PACK_LIST=(openssh-server dos2unix at net-tools gpm bridge-utils btrfs-progs xfsprogs ntp crash bc 
-    selinux-policy-devel libaio-devel libattr-devel keyutils-libs-devel gcc gcc-c++ autoconf automake nano
+    PACK_LIST=(openssh-server dos2unix at net-tools gpm bridge-utils btrfs-progs xfsprogs ntp crash bc dosfstools 
+    selinux-policy-devel libaio-devel libattr-devel keyutils-libs-devel gcc gcc-c++ autoconf automake nano parted
     kexec-tools device-mapper-multipath expect sysstat git wget mdadm bc numactl python3 nfs-utils omping)
     for item in ${PACK_LIST[*]}
     do
@@ -559,10 +562,10 @@ elif is_ubuntu ; then
     #
     sed -i -e 's/sleep 40/#sleep 40/g' /etc/init/failsafe.conf
     sed -i -e 's/sleep 59/#sleep 59/g' /etc/init/failsafe.conf
-    PACK_LIST=(kdump-tools openssh-server tofrodos dosfstools dos2unix ntp gcc open-iscsi iperf gpm vlan iozone3 
-        at multipath-tools expect zip libaio-dev make libattr1-dev stressapptest git wget mdadm automake libtool pkg-config bridge-utils btrfs-tools 
-    libkeyutils-dev xfsprogs reiserfsprogs linux-cloud-tools-common linux-tools-`uname -r` linux-cloud-tools-`uname -r` 
-    sysstat build-essential bc numactl python3 nfs-client)
+    PACK_LIST=(kdump-tools openssh-server tofrodos dosfstools dos2unix ntp gcc open-iscsi iperf gpm vlan iozone3 at 
+    multipath-tools expect zip libaio-dev make libattr1-dev stressapptest git wget mdadm automake libtool pkg-config
+    bridge-utils btrfs-tools libkeyutils-dev xfsprogs reiserfsprogs sysstat build-essential bc numactl python3 nfs-client
+    parted linux-cloud-tools-common linux-tools-`uname -r` linux-cloud-tools-`uname -r` )
     for item in ${PACK_LIST[*]}
     do
         echo "Starting to install $item... "
@@ -642,8 +645,8 @@ elif is_suse ; then
     make install
     cd ~
 
-    PACK_LIST=(at dos2unix dosfstools git-core subversion ntp gcc gcc-c++ wget mdadm expect sysstat bc numactl python3 nfs-client
-    pciutils libaio-devel)
+    PACK_LIST=(at dos2unix dosfstools git-core subversion ntp gcc gcc-c++ wget mdadm expect sysstat bc numactl python3
+    nfs-client pciutils libaio-devel parted)
     for item in ${PACK_LIST[*]}
     do
         echo "Starting to install $item... " >> summary.log

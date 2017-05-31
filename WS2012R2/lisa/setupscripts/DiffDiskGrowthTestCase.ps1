@@ -204,6 +204,16 @@ if ($null -eq $rootdir)
 
 cd $rootdir
 
+# Source TCUtils.ps1 for common functions
+if (Test-Path ".\setupScripts\TCUtils.ps1") {
+	. .\setupScripts\TCUtils.ps1
+	"Info: Sourced TCUtils.ps1"
+}
+else {
+	"Error: Could not find setupScripts\TCUtils.ps1"
+	return $False
+}
+
 # del $summaryLog -ErrorAction SilentlyContinue
 $summaryLog = "${vmName}_summary.log"
 "Covers: ${TC_COVERED}" >> $summaryLog
@@ -214,6 +224,13 @@ if (-not $controllerType)
 {
     "Error: Missing controller type in test parameters"
     return $False
+}
+
+$vmGeneration = GetVMGeneration $vmName $hvServer
+if ( $controllerType -eq "IDE" -and $vmGeneration -eq 2 )
+{
+    Write-Output "Generation 2 VM does not support IDE disk, skip test"
+    return $Skipped
 }
 
 if (-not $controllerID)
@@ -258,16 +275,6 @@ if (-not $ipv4)
     return $False
 }
 
-# Source TCUtils.ps1 for common functions
-if (Test-Path ".\setupScripts\TCUtils.ps1") {
-	. .\setupScripts\TCUtils.ps1
-	"Info: Sourced TCUtils.ps1"
-}
-else {
-	"Error: Could not find setupScripts\TCUtils.ps1"
-	return $false
-}
-
 $hostInfo = Get-VMHost -ComputerName $hvServer
 if (-not $hostInfo)
 {
@@ -279,12 +286,6 @@ $defaultVhdPath = $hostInfo.VirtualHardDiskPath
 if (-not $defaultVhdPath.EndsWith("\"))
 {
     $defaultVhdPath += "\"
-}
-
-$vmGeneration = Get-VM $vmName -ComputerName $hvServer| select -ExpandProperty Generation -ErrorAction SilentlyContinue
-if ($? -eq $False)
-{
-   $vmGeneration = 1
 }
 
 if ($vmGeneration -eq 1)

@@ -206,6 +206,7 @@ if (-not $retVal)
 #
 # Start the client side
 "Start Client"
+.\bin\plink.exe -i ssh\$sshKey root@${vm2ipv4}  "kill `$(ps aux | grep iperf | head -1 | awk '{print `$2}')"
 .\bin\plink.exe -i ssh\$sshKey root@${vm2ipv4}  "iperf3 -s > client.out &"
 
 "Start Server"
@@ -215,7 +216,7 @@ if (-not $retVal)
 # Get the logs
 "Get Logs"
 Start-Sleep -s 40
-$vfEnabledBandwidth = .\bin\plink.exe -i ssh\$sshKey root@${ipv4} "cat PerfResults.log | grep sender | awk '{print `$7}'"
+[decimal]$vfEnabledBandwidth = .\bin\plink.exe -i ssh\$sshKey root@${ipv4} "cat PerfResults.log | grep sender | awk '{print `$7}'"
 if (-not $vfEnabledBandwidth){
     "ERROR: No result was logged! Check if iPerf was executed!" | Tee-Object -Append -file $summaryLog
     return $false
@@ -224,19 +225,12 @@ if (-not $vfEnabledBandwidth){
 "The bandwidth with SR-IOV enabled is $vfEnabledBandwidth Gbits/sec" | Tee-Object -Append -file $summaryLog
 
 #
-# Disable SR-IOV on both VMs
+# Disable SR-IOV
 #
-
 "Disabling VF on vm1"
 Set-VMNetworkAdapter -VMName $vmName -ComputerName $hvServer -IovWeight 0
 if (-not $?) {
     "ERROR: Failed to disable SR-IOV on $vmName!" | Tee-Object -Append -file $summaryLog
-}
-
-"Disabling VF on vm2"
-Set-VMNetworkAdapter -VMName $vm2Name -ComputerName $remoteServer -IovWeight 0
-if (-not $?) {
-    "ERROR: Failed to disable SR-IOV on $vm2Name!" | Tee-Object -Append -file $summaryLog
 }
 
 #
@@ -252,7 +246,7 @@ Start-Sleep -s 20
 
 # Get the logs
 Start-Sleep -s 60
-$vfDisabledBandwidth = .\bin\plink.exe -i ssh\$sshKey root@${ipv4} "cat PerfResultsNoVF.log | grep sender | awk '{print `$7}'"
+[decimal]$vfDisabledBandwidth = .\bin\plink.exe -i ssh\$sshKey root@${ipv4} "cat PerfResultsNoVF.log | grep sender | awk '{print `$7}'"
 if (-not $vfDisabledBandwidth){
     "ERROR: No result was logged after SR-IOV was disabled! Check if iPerf was executed!" | Tee-Object -Append -file $summaryLog
     return $false

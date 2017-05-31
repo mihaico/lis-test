@@ -52,43 +52,11 @@
 
 param([String] $vmName, [String] $hvServer, [String] $testParams)
 
-$retVal = $False
 $sshKey = $null
 $rootDir = $null
 $ipv4 = $null
 $tcCovered = "Undefined"
 $service = "Time Synchronization"
-
-#####################################################################
-#
-#   GetUnixVMTime()
-#
-#####################################################################
-function GetUnixVMTime([String] $sshKey, [String] $ipv4)
-{
-    if (-not $sshKey)
-    {
-        return $null
-    }
-
-    if (-not $ipv4)
-    {
-        return $null
-    }
-
-    $unixTimeStr = $null
-    $command = 'date "+%m/%d/%Y/%T" -u'
-
-    $sshKeyPath = Resolve-Path $sshKey
-    $unixTimeStr = .\bin\plink.exe -i ${sshKeyPath} root@${ipv4} $command
-
-    if (-not $unixTimeStr -and $unixTimeStr.Length -lt 20)
-    {
-        return $null
-    }
-
-    return $unixTimeStr
-}
 
 #######################################################################
 #
@@ -170,7 +138,14 @@ cd $rootDir
 #
 $summaryLog = "${vmName}_summary.log"
 del $summaryLog -ErrorAction SilentlyContinue
-Write-Output "Covers ${tcCovered}" | Out-File $summaryLog
+Write-Output "Info: Covers ${tcCovered}" | Out-File $summaryLog
+
+$retVal = ConfigTimeSync -sshKey $sshKey -ipv4 $ipv4
+if (-not $retVal)
+{
+    Write-Output "Error: Failed to config time sync."
+    return $False
+}
 
 #
 # Get the VMs Integrated Services and verify Time Sync is enabled and status is OK
@@ -262,14 +237,15 @@ if (-not (WaitForVMToStartSSH $ipv4 $StartTimeout))
 }
 "Info : VM successfully started"
 
-# Check time sync
-# Get a time string from the VM, then convert the Unix time string into a .NET DateTime object
-#
-"Info : Get time from Unix VM"
-$unixTimeStr = GetUnixVMTime -sshKey "ssh\${sshKey}" -ipv4 $ipv4
-if (-not $unixTimeStr)
+$diffInSeconds = GetTimeSync -sshKey $sshKey -ipv4 $ipv4
+if ($diffInSeconds -and $diffInSeconds -lt 5)
 {
-    "Error: Unable to get date/time string from VM"
+    Write-Output "Info: Time is properly synced" |Tee-Object -Append -file $summaryLog
+    return $True
+}
+else
+{
+    Write-Output "Error: Time is out of sync!" | Tee-Object -Append -file $summaryLog
     return $False
 }
 

@@ -22,38 +22,26 @@
 <#
 .Synopsis
  Run the NET_SendIPtoVM test.
-
  Description:
     This script sends the IP of a test interface from the dependency VM to the test VM. It can be used as a pretest in case
     the main test consists of a remote-script which needs external information of the other VM.
-
     It can be used with the main Linux distributions. For the time being it is customized for use with the Networking tests.
-
     The following testParams are mandatory:
-
         VM2NAME=name_of_second_VM
             this is the name of the second VM. It will not be managed by the LIS framework, but by this script.
-
     The following testParams are optional:
-
         MAC=001600112233
             The static MAC address of the test NIC of the dependency VM.
-
         sshKey=sshKey.ppk
             The private key which will be used to allow sending information to the VM.
-
     All test scripts must return a boolean ($true or $false)
     to indicate if the script completed successfully or not.
-
    .Parameter vmName
     Name of the first VM implicated in the test .
-
     .Parameter hvServer
     Name of the Hyper-V server hosting the VM.
-
     .Parameter testParams
     Test data for this test case
-
     .Example
     StartVM -vmName myVM -hvServer localhost -testParams "NIC=NetworkAdapter,Private,Private,001600112200;VM2NAME=vm2Name"
 #>
@@ -88,7 +76,7 @@ function Execute ([string] $command)
     .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} $command
     return $?
 }
-    
+
 #
 # Check input arguments
 #
@@ -109,6 +97,7 @@ if ($testParams -eq $null)
     "Error: testParams is null"
     return $False
 }
+$vm2MacAddress = $null
 
 # Write out test Params
 $testParams
@@ -169,9 +158,9 @@ foreach ($p in $params)
     "VM2NAME" { $vm2Name = $fields[1].Trim() }
     "sshKey"  { $sshKey  = $fields[1].Trim() }
     "ipv4"    { $ipv4    = $fields[1].Trim() }
-    "MAC"     { $vm2MacAddress = $fields[1].Trim() }
     "VM2SERVER"    { $vm2Server    = $fields[1].Trim() }
     "ENABLE_VMMQ"   { $EnableVmmq    = $fields[1].Trim()}
+    "MAC"   { $vm2MacAddress = $fields[1].Trim()}
     default   {}  # unknown param - just ignore it
     }
 }
@@ -216,16 +205,25 @@ if (-not $sshKey)
     return $False
 }
 
-if (-not $vm2MacAddress)
-{
-    "Error: test parameter MAC was not specified"
-    return $False
-}
-
 if (-not $vm2Server)
 {
     $vm2Server = $hvServer
     "vm2Server was set as $hvServer"
+}
+
+# Get the MAC that was generated
+$validMac = isValidMAC $vm2MacAddress
+if (-not $validMac) {
+    $CurrentDir= "$pwd\"
+    $testfile = "macAddressDependency.file"
+    $pathToFile="$CurrentDir"+"$testfile"
+    $streamReader = [System.IO.StreamReader] $pathToFile
+    $vm2MacAddress = $streamReader.ReadLine()
+    $streamReader.close()
+    if (-not $vm2MacAddress) {
+        "Error: test parameter MAC was not specified"
+        return $False
+    }
 }
 
 $checkState = Get-VM -Name $vm2Name -ComputerName $vm2Server
@@ -271,9 +269,13 @@ if (-not $ipv4) {
 sleep 60
 
 $tempipv4VM2 = Get-VMNetworkAdapter -VMName $vm2Name -ComputerName $vm2Server | Where-object {$_.MacAddress -like "$vm2MacAddress"} | Select -Expand IPAddresses
-if($tempipv4VM2 -isnot [system.array]) { $tempipv4VM2 = @($tempipv4VM2)}
-$testipv4VM2 = $tempipv4VM2[0]
-$testipv6VM2 = $tempipv4VM2[1]
+if($tempipv4VM2 -is [system.array]) {
+	$testipv4VM2 = $tempipv4VM2[0]
+	$testipv6VM2 = $tempipv4VM2[1]
+}
+else {
+	$testipv4VM2 = $tempipv4VM2
+}
 
 if (-not $testipv4VM2) {
     "Error: could not retrieve dependency VM's test IP address"

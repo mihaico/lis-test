@@ -29,7 +29,7 @@
                 <to>myself@mycompany.com</to>
             </recipients>
             <sender>myself@mycompany.com</sender>
-            <subject>VMBus tests for WS2012R2</subject>
+            <subject>VMBus tests</subject>
             <smtpServer>mysmtphost.mycompany.com</smtpServer>
         </email>
 
@@ -71,7 +71,7 @@
 		<noReboot>False</noReboot>
 		<testParams>
             		<param>TC_COVERED=VMBus-02</param>
-			<param>vCPU=4</param>
+			<param>vCPU=8</param>
             	</testParams>
         </test>
         
@@ -84,13 +84,15 @@
 		<noReboot>False</noReboot>
 		<testParams>
 			<param>TC_COVERED=VMBus-03</param>
-            		<param>VMMemory=2GB</param>
+            <param>VMMemory=2GB</param>
+            <param>onKdump=stop</param>
 		</testParams>
+		<cleanupScript>setupscripts\RevertSnapshot.ps1</cleanupScript>
         </test>
 
         <test>
 		<testName>VMBus_PanicNotifier_onKdump</testName>
-		<testScript>SetupScripts\VMBus_PanicNotifier_onKdump.ps1</testScript>
+		<testScript>SetupScripts\VMBus_PanicNotifier.ps1</testScript>
 		<setupScript>setupScripts\SetVMMemory.ps1</setupScript>
 		<timeout>800</timeout>
 		<onError>Continue</onError>
@@ -98,7 +100,9 @@
 		<testParams>
 			<param>TC_COVERED=VMBus-04</param>
 			<param>VMMemory=2GB</param>
+			<param>onKdump=start</param>
 		</testParams>
+		<cleanupScript>setupscripts\RevertSnapshot.ps1</cleanupScript>
         </test>
     </testCases>
 
@@ -110,6 +114,9 @@
             <ipv4></ipv4>
             <sshKey>linux_id_rsa.ppk</sshKey>
             <suite>VMBus</suite>
+            <testParams>
+                <param>SnapshotName=ICABase</param>
+            </testParams>
         </vm>
     </VMs>
 
