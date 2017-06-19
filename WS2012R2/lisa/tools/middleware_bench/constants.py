@@ -66,6 +66,10 @@ AWS = 'aws'
 AZURE = 'azure'
 GCE = 'gce'
 
+HVM = 'hvm'
+MSAZURE = 'MS Azure'
+KVM = 'kvm'
+
 DEVICE_AWS = '/dev/sdx'
 DEVICE_AZURE = '/dev/sdc'
 DEVICE_GCE = '/dev/disk/by-id/google-'
@@ -73,6 +77,7 @@ TEMP_DEVICE_GCE = '/dev/sdb'
 
 AWS_P28XLARGE = 'p2.8xlarge'
 AWS_D24XLARGE = 'd2.4xlarge'
+AWS_M416XLARGE= 'm4.16xlarge'
 
 VM_DISK = 'vm_disk'
 DB_DISK = 'db_disk'
@@ -81,3 +86,5 @@ CLUSTER_DISK = 'cluster_disk'
 RAID_DEV = '/dev/md0'
 
 ENABLED = 'enabled'
+SRIOV = 'SRIOV'
+SYNTHETIC = 'Synthetic'
