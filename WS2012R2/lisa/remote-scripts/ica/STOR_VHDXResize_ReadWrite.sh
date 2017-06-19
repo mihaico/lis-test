@@ -111,13 +111,9 @@ checkResult "Failed to read file $testFile"
 rm $testFile > ~/summary.log
 checkResult "Failed to delete file $testFile"
 
-rmdir /mnt/ICA/ 2> ~/summary.log
-if [ $? -gt 0 ]; then
-    LogMsg "Failed to delete directory /mnt/ICA/"
-    echo "Deleting /mnt/ICA/ directory: Failed" >> ~/summary.log
-    UpdateTestState $ICA_TESTFAILED
-    exit 10
-fi
+rmdir $testDir 2> ~/summary.log
+checkResult "Failed to delete directory $testDir"
+
 # Convert eol
 dos2unix collect_gcov_data.sh
 
@@ -127,3 +123,9 @@ dos2unix collect_gcov_data.sh
     echo "TestAborted" > state.txt
     exit 2
 }
+
+msg="Successfully run read/write script"
+LogMsg $msg
+echo $msg > ~/summary.log
+
+exit 0

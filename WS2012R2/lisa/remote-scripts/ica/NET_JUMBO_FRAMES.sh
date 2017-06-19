@@ -490,6 +490,7 @@ for __iterator in ${!SYNTH_NET_INTERFACES[@]}; do
 	done
 
 done
+
 # Convert eol
 dos2unix collect_gcov_data.sh
 

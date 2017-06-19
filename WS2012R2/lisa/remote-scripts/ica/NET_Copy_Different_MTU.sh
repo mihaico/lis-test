@@ -668,6 +668,7 @@ fi
 
 # Erase file locally, if set
 [ $NO_DELETE -eq 0 ] && rm -f $output_file
+
 # Convert eol
 dos2unix collect_gcov_data.sh
 

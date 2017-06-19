@@ -160,7 +160,7 @@ if [ $? -ne 0 ]; then
     SetTestStateFailed
 fi
 
-msg="Info: Multicast packets were successfully sent, 0% loss"
+
 # Convert eol
 dos2unix collect_gcov_data.sh
 
@@ -171,7 +171,7 @@ dos2unix collect_gcov_data.sh
     exit 2
 }
 
-msg="Multicast packets were successfully sent, 0% loss"
+msg="Info: Multicast packets were successfully sent, 0% loss"
 LogMsg $msg
 UpdateSummary "$msg"
 SetTestStateCompleted

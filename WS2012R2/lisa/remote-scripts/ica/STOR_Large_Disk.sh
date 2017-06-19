@@ -265,6 +265,7 @@ do
         fi
     done
 done
+
 # Convert eol
 dos2unix collect_gcov_data.sh
 

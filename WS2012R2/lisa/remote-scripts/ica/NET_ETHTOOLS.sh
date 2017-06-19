@@ -164,6 +164,7 @@ else
 		UpdateSummary "$msg"
 	done
 fi
+
 # Convert eol
 dos2unix collect_gcov_data.sh
 

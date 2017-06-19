@@ -96,7 +96,6 @@ if [ -z $lsvmbus_path ]; then
     exit 1
 fi
 
-$lsvmbus_path -vvv
 $lsvmbus_path -vvv >> lsvmbus.log
 
 while IFS='' read -r line || [[ -n "$line" ]]; do

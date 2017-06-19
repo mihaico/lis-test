@@ -225,6 +225,7 @@ if [ ${#SYNTH_NET_INTERFACES[@]} -eq 0 -a ${#LEGACY_NET_INTERFACES[@]} -eq 0 ]; 
 	SetTestStateFailed
 	exit 10
 fi
+
 # Convert eol
 dos2unix collect_gcov_data.sh
 

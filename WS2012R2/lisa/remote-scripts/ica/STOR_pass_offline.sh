@@ -85,7 +85,7 @@ LinuxRelease()
 #######################################################################
 iscsiSTOP()
 {
-    ssh -i /root/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no root@"$1" "service iscsi-target stop"
+    ssh -i /root/.ssh/"$SSH_PRIVATE_KEY" -v -o StrictHostKeyChecking=no root@"$1" "service iscsitarget stop"
     return $?
 }
 

@@ -140,6 +140,7 @@ TestNFS
 EndTst=$(date +%s.%N)
 DiffTst=$(echo "$EndTst - $StartTst" | bc)
 LogMsg "End testing filesystem: $fs; Test duration: $DiffTst seconds."
+
 # Convert eol
 dos2unix collect_gcov_data.sh
 

@@ -193,6 +193,7 @@ do
         echo " ${driveName}1 is ready for TRIM." >> ~/summary.log
     fi
 done
+
 # Convert eol
 dos2unix collect_gcov_data.sh
 

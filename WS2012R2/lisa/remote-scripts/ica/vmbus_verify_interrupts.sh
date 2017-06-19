@@ -48,6 +48,7 @@ ICA_TESTRUNNING="TestRunning"      # The test is running
 ICA_TESTCOMPLETED="TestCompleted"  # The test completed successfully
 ICA_TESTABORTED="TestAborted"      # Error during setup of test
 ICA_TESTFAILED="TestFailed"        # Error during execution of test
+ICA_TESTSKIPPED="TestSkipped"      # Test case is not available
 
 CONSTANTS_FILE="constants.sh"
 nonCPU0inter=0
