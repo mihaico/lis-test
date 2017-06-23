@@ -1,32 +1,36 @@
 #!/bin/bash
 
-declare -a drivers_loc=( 'drivers/hv/channel.c'
-                         # af_hvsock.c - not found on upstream
-                         'drivers/hv/channel_mgmt.c'
-                         'drivers/hv/connection.c'
-                         'drivers/hid/hid-core.c'
-                         'drivers/hid/hid-debug.c'
-                         'drivers/hid/hid-hyperv.c'
-                         'drivers/hid/hid-input.c'
-                         'drivers/hid/hv.c'
-                         #'drivers/hv/hv_balloon.c' - not instrumented
-                         #'drivers/hv/hv_compat.c' - not instrumented
-                         'drivers/hv/hv_fcopy.c'
-                         'drivers/hv/hv_kvp.c'
-                         'drivers/hv/hv_snapshot.c'
-                         'drivers/hv/hv_util.c'
-                         'drivers/hv/hv_utils_transport.c'
-                         # hvnd_addr.c - not found on upstream
-                         'drivers/input/serio/hyperv-keyboard.c'
-                         'drivers/video/fbdev/hyperv_fb.c'
-                         'drivers/net/hyperv/netvsc.c'
-                         'drivers/net/hyperv/netvsc_drv.c'
-                         # 'drivers/infiniband/hw/cxgb4/provider.c' - not instrumented
-                         'drivers/hv/ring_buffer.c'
-                         'drivers/net/hyperv/rndis_filter.c'
-                         'drivers/scsi/storvsc_drv.c'
-                         # vmbus_rdma.c - not found on upstream )
-                         'drivers/hv/vmbus_drv.c' )
+#declare -a drivers_loc=( 'drivers/hv/channel.c'
+#                         # af_hvsock.c - not found on upstream
+#                         'drivers/hv/channel_mgmt.c'
+#                         'drivers/hv/connection.c'
+#                         'drivers/hid/hid-core.c'
+#                         'drivers/hid/hid-debug.c'
+#                         'drivers/hid/hid-hyperv.c'
+#                         'drivers/hid/hid-input.c'
+#                         'drivers/hid/hv.c'
+#                         #'drivers/hv/hv_balloon.c' - not instrumented
+#                         #'drivers/hv/hv_compat.c' - not instrumented
+#                         'drivers/hv/hv_fcopy.c'
+#                         'drivers/hv/hv_kvp.c'
+#                         'drivers/hv/hv_snapshot.c'
+#                         'drivers/hv/hv_util.c'
+#                         'drivers/hv/hv_utils_transport.c'
+#                         # hvnd_addr.c - not found on upstream
+#                         'drivers/input/serio/hyperv-keyboard.c'
+#                         'drivers/video/fbdev/hyperv_fb.c'
+#                         'drivers/net/hyperv/netvsc.c'
+#                         'drivers/net/hyperv/netvsc_drv.c'
+#                         # 'drivers/infiniband/hw/cxgb4/provider.c' - not instrumented
+#                         'drivers/hv/ring_buffer.c'
+#                         'drivers/net/hyperv/rndis_filter.c'
+#                         'drivers/scsi/storvsc_drv.c'
+#                         # vmbus_rdma.c - not found on upstream )
+#                         'drivers/hv/vmbus_drv.c' )
+
+declare -a drivers_loc=( 'drivers/net/ethernet/mellanox/mlx4/mlx4_en.h'
+                         'drivers/net/ethernet/mellanox/mlx4/mlx4_core.mod.c'
+                         'drivers/net/ethernet/mellanox/mlx4/mlx4_en.mod.c' )
 
 declare -a lib_files=( 'hyperv.h' 'mshyperv.h' 'sync_bitops.h'
                        'access_ok.h' 'be_byteshift.h' 'be_memmove.h'
@@ -36,9 +40,9 @@ declare -a lib_files=( 'hyperv.h' 'mshyperv.h' 'sync_bitops.h'
                        'hidraw.h' 'hv_compat.h' 'rndis.h' 'hid-uuid.h'
                        'hid.h' )
 
-SOURCE_LOC="/home/test/linux-4.11.4/"
-DRIVER_GCOV_LOC="/sys/kernel/debug/gcov/home/test/linux-4.11.4/"
-DAEMON_GCOV_LOC="/home/test/linux-4.11.4/tools/hv/"
+SOURCE_LOC="/home/test/linux-4.11.6/"
+DRIVER_GCOV_LOC="/sys/kernel/debug/gcov/home/test/linux-4.11.6/"
+DAEMON_GCOV_LOC="/home/test/linux-4.11.6/tools/hv/"
 
 declare -a daemons=( 'hv_kvp_daemon' 'hv_vss_daemon' 'hv_fcopy_daemon' )
 declare -a daemons_loc=( 'tools/hv/hv_kvp_daemon.c'

@@ -125,6 +125,15 @@ if [ $? -ne 0 ]; then
 
 else
     sleep 10
+    # Convert eol
+    dos2unix collect_gcov_data.sh
+
+    # Source utils.sh
+    . collect_gcov_data.sh || {
+        echo "Error: unable to source collect_gcov_data.sh!"
+        echo "TestAborted" > state.txt
+        exit 2
+    }
     msg="VM2 successfully received the packets sent to the broadcast address"
     LogMsg $msg
     UpdateSummary "$msg"
