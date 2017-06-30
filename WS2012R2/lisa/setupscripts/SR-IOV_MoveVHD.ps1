@@ -260,6 +260,26 @@ if (-not $vfEnabledRTT){
     return $false   
 }
 
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
+
 if ($vfEnabledRTT -le 0.11) {
     Write-Output "VF is up & running, RTT is $vfEnabledRTT ms" | Tee-Object -Append -file $summaryLog
     Cleanup "SRIOV_Child_Remote"

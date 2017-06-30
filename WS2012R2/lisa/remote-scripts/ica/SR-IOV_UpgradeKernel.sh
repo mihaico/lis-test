@@ -55,5 +55,14 @@ if [ $? -ne 0 ]; then
     exit 1
 else
 	LogMsg "Kernel was installed successfully"
+	# Convert eol
+    dos2unix collect_gcov_data.sh
+
+    # Source utils.sh
+    . collect_gcov_data.sh || {
+        echo "Error: unable to source collect_gcov_data.sh!"
+        echo "TestAborted" > state.txt
+        exit 2
+    }
 	SetTestStateCompleted
 fi

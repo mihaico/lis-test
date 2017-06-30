@@ -342,5 +342,25 @@ while ($isDone -eq $False)
     "Run $counter :: Time to switch between netvsc and VF was $timeToSwitch seconds. Throughput was $vfAfterThroughput gbps"
 }
 
+# Collect gcov
+RunRemoteScript "collect_gcov_data.sh"
+
+$remoteFile = "gcov_data.zip"
+$localFile = "${TestLogDir}\${vmName}_${TestName}_gcov_data.zip"
+.\bin\pscp -i ssh\${sshKey} root@${ipv4}:${remoteFile} .
+$sts = $?
+if ($sts)
+{
+    "Info: Collect gcov_data.zip from ${remoteFile} to ${localFile}"
+    if (test-path $remoteFile)
+    {
+        $contents = Get-Content -Path $remoteFile
+        if ($null -ne $contents)
+        {
+                if ($null -ne ${TestLogDir})
+                {
+                    move "${remoteFile}" "${localFile}"
+}}}}
+
 "VM $vmName changed its state for $counter times and no issues were encountered" | Tee-Object -Append -file $summaryLog
 return $true

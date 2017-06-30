@@ -136,6 +136,16 @@ if [ $? -ne 0 ]; then
     SetTestStateFailed
 fi
 
+# Convert eol
+    dos2unix collect_gcov_data.sh
+
+    # Source utils.sh
+    . collect_gcov_data.sh || {
+        echo "Error: unable to source collect_gcov_data.sh!"
+        echo "TestAborted" > state.txt
+        exit 2
+    }
+
 sleep 5
 cat pingResults.log | grep " 0%"
 if [ $? -ne 0 ]; then

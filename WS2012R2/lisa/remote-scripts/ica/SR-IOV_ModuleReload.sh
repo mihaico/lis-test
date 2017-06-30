@@ -237,6 +237,16 @@ if [ 0 -ne $? ]; then
     SetTestStateFailed
 fi
 
+# Convert eol
+dos2unix collect_gcov_data.sh
+
+# Source utils.sh
+. collect_gcov_data.sh || {
+    echo "Error: unable to source collect_gcov_data.sh!"
+    echo "TestAborted" > state.txt
+    exit 2
+}
+
 # Ping the remote host after bringing down the VF
 ping -I "bond0" -c 10 "$BOND_IP2" >/dev/null 2>&1
 if [ 0 -eq $? ]; then
