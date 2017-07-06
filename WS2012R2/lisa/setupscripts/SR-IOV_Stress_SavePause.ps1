@@ -160,6 +160,8 @@ foreach ($p in $params)
         "REMOTE_USER" { $remoteUser = $fields[1].Trim() }
         "REMOTE_SERVER" { $remoteServer = $fields[1].Trim() }
         "VM2NAME"  { $vm2Name = $fields[1].Trim() }
+        "TestLogDir" { $TestLogDir = $fields[1].Trim() }
+        "TestName"   { $TestName = $fields[1].Trim() }
         "VM_STATE" { $vmState = $fields[1].Trim()}
         "TC_COVERED" { $TC_COVERED = $fields[1].Trim() }
     }
@@ -215,16 +217,24 @@ if (-not $retVal)
     return $false
 }
 
-#
-# Reboot VM
-#
 Start-Sleep -s 5
-Restart-VM -VMName $vmName -ComputerName $hvServer -Force
-$sts = WaitForVMToStartSSH $ipv4 200
-if( -not $sts[-1]){
-    "ERROR: VM $vmName has not booted after the restart" | Tee-Object -Append -file $summaryLog
-    return $false    
+# Verify distro VM. If it's RHEL/CentOS no reboot is needed
+$sts = SendCommandToVM $ipv4 $sshKey "cat /etc/redhat-release"
+if (-not $sts[-1]){
+    # Reboot VM
+    Restart-VM -VMName $vmName -ComputerName $hvServer -Force
+    $sts = WaitForVMToStartSSH $ipv4 200
+    if( -not $sts[-1]){
+        "ERROR: VM $vmName has not booted after the restart" | Tee-Object -Append -file $summaryLog
+        return $false    
+    }
+
+    # Get IPs
+    Start-Sleep -s 5
+    $ipv4 = GetIPv4 $vmName $hvServer
+    "${vmName} IP Address after reboot: ${ipv4}"
 }
+
 # Get IPs
 $ipv4 = GetIPv4 $vmName $hvServer
 "${vmName} IP Address: ${ipv4}"
@@ -342,6 +352,7 @@ while ($isDone -eq $False)
     "Run $counter :: Time to switch between netvsc and VF was $timeToSwitch seconds. Throughput was $vfAfterThroughput gbps"
 }
 
+. .\setupscripts\TCUtils.ps1
 # Collect gcov
 RunRemoteScript "collect_gcov_data.sh"
 
@@ -362,5 +373,5 @@ if ($sts)
                     move "${remoteFile}" "${localFile}"
 }}}}
 
-"VM $vmName changed its state for $counter times and no issues were encountered" | Tee-Object -Append -file $summaryLog
+# "VM $vmName changed its state for $counter times and no issues were encountered" | Tee-Object -Append -file $summaryLog
 return $true

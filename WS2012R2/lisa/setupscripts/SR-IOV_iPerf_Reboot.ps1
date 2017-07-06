@@ -275,9 +275,9 @@ Start-Sleep -s 5
 
 # Read the throughput again, it should be higher than before
 # We should see a a similar throughput as before. If the throughput after reboot
-# is lower than 80% of the first recorded throughput, the test is considered failed
+# is lower than 70% of the first recorded throughput, the test is considered failed
 Start-Sleep -s 30
-[decimal]$vfBeforeThroughput = $vfBeforeThroughput * 0.8
+[decimal]$vfBeforeThroughput = $vfBeforeThroughput * 0.7
 [decimal]$vfFinalThroughput = .\bin\plink.exe -i ssh\$sshKey root@${ipv4} "tail -2 PerfResults.log | head -1 | awk '{print `$7}'"
 
 "The throughput after rebooting the VM is $vfFinalThroughput Gbits/sec" | Tee-Object -Append -file $summaryLog
@@ -287,6 +287,7 @@ if ($vfBeforeThroughput -ge $vfFinalThroughput ) {
     return $false 
 }
 
+. .\setupscripts\TCUtils.ps1
 # Collect gcov
 RunRemoteScript "collect_gcov_data.sh"
 
