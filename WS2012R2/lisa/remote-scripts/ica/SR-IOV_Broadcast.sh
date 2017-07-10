@@ -105,7 +105,7 @@ if [ $? -ne 0 ]; then
     SetTestStateFailed
 fi
 
-ssh -i "$HOME"/.ssh/"$sshKey" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" 'tcpdump -i bond0 -c 10 ip proto \\icmp > out.client'
+ssh -i "$HOME"/.ssh/"$ssh_private_key" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" 'tcpdump -i bond0 -c 10 ip proto \\icmp > out.client'
 if [ $? -ne 0 ]; then
     msg="ERROR: Could not start tcpdump on VM2 (BOND_IP: ${BOND_IP2})"
     LogMsg "$msg"
@@ -116,7 +116,7 @@ else
     sleep 20
 fi
 
-ssh -i "$HOME"/.ssh/"$sshKey" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" cat out.client | grep $broadcastAddress
+ssh -i "$HOME"/.ssh/"$ssh_private_key" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" cat out.client | grep $broadcastAddress
 if [ $? -ne 0 ]; then
     msg="ERROR: VM2 didn't receive any packets from the broadcast address"
     LogMsg "$msg"

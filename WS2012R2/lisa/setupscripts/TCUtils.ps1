@@ -1880,3 +1880,104 @@ function CreateController([string] $vmName, [string] $server, [string] $controll
     }
     return $True
 }
+
+
+#######################################################################
+#
+# Collect Gcov data.
+#
+#######################################################################
+function CollectGcovData($remoteScript)
+{
+    $retValue = $False
+    $stateFile     = "state.txt"
+    $timeout       = 6000
+    remoteScript   = "collect_gcov_data.sh"
+
+    "./${remoteScript} > ${remoteScript}.log" | out-file -encoding ASCII -filepath runtest.sh
+
+    .\bin\pscp -i ssh\${sshKey} .\runtest.sh root@${ipv4}:
+    if (-not $?)
+    {
+       Write-Output "ERROR: Unable to copy runtest.sh to the VM"
+       return $False
+    }
+    .\bin\pscp -i ssh\${sshKey} .\remote-scripts\ica\${remoteScript} root@${ipv4}:
+    if (-not $?)
+    {
+       Write-Output "ERROR: Unable to copy ${remoteScript} to the VM"
+       return $False
+    }
+
+    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dos2unix ${remoteScript} 2> /dev/null"
+    if (-not $?)
+    {
+        Write-Output "ERROR: Unable to run dos2unix on ${remoteScript}"
+        return $False
+    }
+
+    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "dos2unix runtest.sh  2> /dev/null"
+    if (-not $?)
+    {
+        Write-Output "ERROR: Unable to run dos2unix on runtest.sh"
+        return $False
+    }
+
+    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x ${remoteScript}   2> /dev/null"
+    if (-not $?)
+    {
+        Write-Output "ERROR: Unable to chmod +x ${remoteScript}"
+        return $False
+    }
+    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "chmod +x runtest.sh  2> /dev/null"
+    if (-not $?)
+    {
+        Write-Output "ERROR: Unable to chmod +x runtest.sh "
+        return $False
+    }
+
+    # Run the script on the vm
+    .\bin\plink.exe -i ssh\${sshKey} root@${ipv4} "./runtest.sh"
+    if (-not $?)
+    {
+        Write-Output "ERROR: Unable to run runtest.sh "
+        return $False
+    }
+
+    # Get the logs
+    $remoteScriptLog = $remoteScript+".log"
+
+    bin\pscp -q -i ssh\${sshKey} root@${ipv4}:${remoteScriptLog} .
+    $sts = $?
+    if ($sts)
+    {
+        if (test-path $remoteScriptLog)
+        {
+            $contents = Get-Content -Path $remoteScriptLog
+            if ($null -ne $contents)
+            {
+                    if ($null -ne ${TestLogDir})
+                    {
+                        move "${remoteScriptLog}" "${TestLogDir}\${remoteScriptLog}"
+                    }
+                    else
+                    {
+                        Write-Output "INFO: $remoteScriptLog is copied in ${rootDir}"
+                    }
+            }
+            else
+            {
+                Write-Output "Warn: $remoteScriptLog is empty"
+            }
+        }
+        else
+        {
+             Write-Output "Warn: ssh reported success, but $remoteScriptLog file was not copied"
+        }
+    }
+
+    # Cleanup
+    del runtest.sh -ErrorAction "SilentlyContinue"
+
+    return $retValue
+}

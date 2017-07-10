@@ -107,7 +107,7 @@ while [ $__iterator -lt $bondCount ]; do
     staticIP2=$(cat constants.sh | grep IP$__ipIterator2 | tr = " " | awk '{print $2}')
 
     # Send 10MB file from VM1 to VM2 via bond0
-    scp -i "$HOME"/.ssh/"$sshKey" -o BindAddress=$staticIP1 -o StrictHostKeyChecking=no "$output_file" "$REMOTE_USER"@"$staticIP2":/tmp/"$output_file"
+    scp -i "$HOME"/.ssh/"$ssh_private_key" -o BindAddress=$staticIP1 -o StrictHostKeyChecking=no "$output_file" "$REMOTE_USER"@"$staticIP2":/tmp/"$output_file"
     if [ 0 -ne $? ]; then
         msg="ERROR: Unable to send the file from VM1 to VM2 using bond$__iterator"
         LogMsg "$msg"
@@ -130,7 +130,7 @@ while [ $__iterator -lt $bondCount ]; do
         exit 10
     fi
 
-    rxValue=$(ssh -i "$HOME"/.ssh/"$sshKey" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" ifconfig | grep $staticIP2 -A 7 | grep "RX packets" | sed 's/:/ /' | awk '{print $3}')
+    rxValue=$(ssh -i "$HOME"/.ssh/"$ssh_private_key" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" ifconfig | grep $staticIP2 -A 7 | grep "RX packets" | sed 's/:/ /' | awk '{print $3}')
     LogMsg "RX Value: $rxValue"
     if [ $rxValue -lt 70000 ]; then
         msg="ERROR: RX packets insufficient"
@@ -141,7 +141,7 @@ while [ $__iterator -lt $bondCount ]; do
     fi
 
     # Remove file from VM2
-    ssh -i "$HOME"/.ssh/"$sshKey" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$staticIP2" rm -f /tmp/"$output_file"
+    ssh -i "$HOME"/.ssh/"$ssh_private_key" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$staticIP2" rm -f /tmp/"$output_file"
 
     sleep 10
     msg="Successfully sent file from VM1 to VM2 through bond${__iterator}"

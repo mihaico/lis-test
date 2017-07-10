@@ -92,8 +92,8 @@ else
 fi
 
 # iPerf3 Stress test
-ssh -i "$HOME"/.ssh/"$sshKey" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" "kill $(ps aux | grep iperf | head -1 | awk '{print $2}')"
-ssh -i "$HOME"/.ssh/"$sshKey" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" 'iperf3 -s > perfResults.log &'
+ssh -i "$HOME"/.ssh/"$ssh_private_key" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" "kill $(ps aux | grep iperf | head -1 | awk '{print $2}')"
+ssh -i "$HOME"/.ssh/"$ssh_private_key" -o StrictHostKeyChecking=no "$REMOTE_USER"@"$BOND_IP2" 'iperf3 -s > perfResults.log &'
 if [ $? -ne 0 ]; then
     msg="ERROR: Could not start iPerf3 on VM2 (BOND_IP: ${BOND_IP2})"
     LogMsg "$msg"

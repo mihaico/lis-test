@@ -208,8 +208,8 @@ Check_SRIOV_Parameters()
         exit 1
 	fi
 
-	if [ "${sshKey:-UNDEFINED}" = "UNDEFINED" ]; then
-	    msg="ERROR: The test parameter sshKey is not defined in ${LIS_CONSTANTS_FILE}"
+	if [ "${ssh_private_key:-UNDEFINED}" = "UNDEFINED" ]; then
+	    msg="ERROR: The test parameter ssh_private_key is not defined in ${LIS_CONSTANTS_FILE}"
 	    LogMsg "$msg"
 	    UpdateSummary "$msg"
         SetTestStateAborted

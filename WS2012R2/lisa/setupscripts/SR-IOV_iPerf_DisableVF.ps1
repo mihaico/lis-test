@@ -150,8 +150,6 @@ foreach ($p in $params)
         "BOND_IP2" { $vmBondIP2 = $fields[1].Trim() }
         "NETMASK" { $netmask = $fields[1].Trim() }
         "VM2NAME" { $vm2Name = $fields[1].Trim() }
-        "TestLogDir" { $TestLogDir = $fields[1].Trim() }
-        "TestName"   { $TestName = $fields[1].Trim() }
         "REMOTE_SERVER" { $remoteServer = $fields[1].Trim()}
         "TC_COVERED" { $TC_COVERED = $fields[1].Trim() }
     }
@@ -288,6 +286,7 @@ if ($vfEnabledThroughput -gt $vfFinalThroughput ) {
 
 . .\setupscripts\TCUtils.ps1
 # Collect gcov
+
 RunRemoteScript "collect_gcov_data.sh"
 
 $remoteFile = "gcov_data.zip"

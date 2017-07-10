@@ -157,7 +157,7 @@ txValueBefore=$(ifconfig bond0 | grep "TX packets" | sed 's/:/ /' | awk '{print 
 LogMsg "TX value before sending file: $txValueBefore"
 
 # Send the file
-scp -i "$HOME"/.ssh/"$sshKey" -o BindAddress=$BOND_IP1 -o StrictHostKeyChecking=no "$output_file" "$REMOTE_USER"@"$BOND_IP2":/tmp/"$output_file"
+scp -i "$HOME"/.ssh/"$ssh_private_key" -o BindAddress=$BOND_IP1 -o StrictHostKeyChecking=no "$output_file" "$REMOTE_USER"@"$BOND_IP2":/tmp/"$output_file"
 if [ 0 -ne $? ]; then
     msg="ERROR: Unable to send the file from VM1 to VM2 using bond0"
     LogMsg "$msg"
