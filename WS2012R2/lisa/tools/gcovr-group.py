@@ -33,7 +33,8 @@ if order_file == '':
 
 
 with open(html_file, "r") as file:
-	html.append(file.readline())
+	for line in file:
+		html.append(line)
 
 head=""
 for i in range(0, 312):
@@ -59,7 +60,8 @@ for i in range(nr , len(html)):
 
 order = []	
 with open(order_file, "r") as file:
-	order.append(file.readline())
+	for line in file:
+		order.append(line)
 
 for i in range(0 , len(order)):
 	order[i]=order[i].replace("\n", "")
