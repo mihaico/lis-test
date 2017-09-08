@@ -200,6 +200,7 @@
         <test>
             <testName>GCOVR</testName>
             <testScript>setupscripts\GCOV_Data_Group.ps1</testScript>>
+            <timeout>3600</timeout>
             <testparams>
                 <param>GcovGroupFile=tools\gcov_group</param>
             </testparams>

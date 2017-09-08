@@ -31,6 +31,8 @@ for($i=0;$i -le ($zipNumber - 1); $i++){
     $zipFiles[$i] = $zipFiles[$i].Name
 }
 
+$testPassed = $True
+
 foreach ($zipFile in $zipFiles){
     [System.IO.Compression.ZipFile]::ExtractToDirectory("$TestLogDir\$zipfile", "$TestLogDir\temp_gcov")
 	$pyPath="$rootDir\tools"
@@ -40,6 +42,10 @@ foreach ($zipFile in $zipFiles){
     popd
     mv .\temp_gcov\out.html ".\$($zipFile.Split('.')[0]).html"
     rm -Recurse -Force .\temp_gcov
+	
+	if ( ! $(Test-Path ".\$($zipFile.Split('.')[0]).html")){
+		$testPassed = $False
+	}
 }
-
 popd
+return $testPassed
