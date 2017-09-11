@@ -35,10 +35,10 @@ $testPassed = $True
 
 foreach ($zipFile in $zipFiles){
     [System.IO.Compression.ZipFile]::ExtractToDirectory("$TestLogDir\$zipfile", "$TestLogDir\temp_gcov")
-	$pyPath="$rootDir\tools"
+	$pyPath="$rootDir\tools\gcov"
     pushd .\temp_gcov
     python "$pyPath\gcovr" -g --html-details --html -o temp.html 
-    python "$pyPath\gcovr-group.py" -h temp.html -O "$rootDir\$GcovGroupFile" -o .\out.html
+    python "$pyPath\gcovr-group.py" -h temp.html -O "$rootDir\tools\gcov\$GcovGroupFile" -o .\out.html
     popd
     mv .\temp_gcov\out.html ".\$($zipFile.Split('.')[0]).html"
     rm -Recurse -Force .\temp_gcov
