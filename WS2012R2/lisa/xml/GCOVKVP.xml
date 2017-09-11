@@ -49,6 +49,7 @@
                 <suiteTest>KVP_DeleteNonExistKVPOnGuest</suiteTest>
                 <suiteTest>KVP_ModifyNonExistKVPOnGuest</suiteTest>
                 <suiteTest>KVP_VerifyHostInjectedItems</suiteTest>
+                <suiteTest>GCOVR</suiteTest>
             </suiteTests>
         </suite>
     </testSuites>
@@ -148,7 +149,7 @@
                 <param>sshKey=rhel5_id_rsa.ppk</param>
             </testparams>
         </test>
-		
+
     	<test>
     		<testName>KVP_DeleteNonExistKVPOnGuest</testName>
     		<testScript>setupscripts\KVP_DeleteNonExistKeyValue.ps1</testScript>
@@ -195,15 +196,24 @@
                 <param>Items=11</param>
             </testparams>
         </test>
+		
+        <test>
+            <testName>GCOVR</testName>
+            <testScript>setupscripts\GCOV_Data_Group.ps1</testScript>>
+            <timeout>3600</timeout>
+            <testparams>
+                <param>GcovGroupFile=tools\gcov_group</param>
+            </testparams>
+        </test>
     </testCases>
 
     <VMs>        
 	    <vm>
          <hvServer>localhost</hvServer>
-         <vmName>centos_3</vmName>
+         <vmName>CentOS-7</vmName>
          <os>Linux</os>
-         <ipv4>192.168.126.122</ipv4>
-         <sshKey>rhel5_id_rsa.ppk</sshKey>
+         <ipv4></ipv4>
+         <sshKey>key.ppk</sshKey>
             <suite>KVP</suite>
         </vm>
     </VMs>
