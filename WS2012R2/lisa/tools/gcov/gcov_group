@@ -1,0 +1,6 @@
+#Daemons
+hv_kvp_daemon.c
+hv_vss_daemon.c
+#Network
+netvsc.c
+altnet.c
